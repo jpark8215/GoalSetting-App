@@ -45,11 +45,6 @@ class HomeFragment : Fragment() {
             performGoogleSearch(userInput)
         }
 
-        val textView: TextView = binding.textHome
-        homeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
-
         return root
     }
 
