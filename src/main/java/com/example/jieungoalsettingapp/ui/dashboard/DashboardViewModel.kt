@@ -7,11 +7,11 @@ import com.example.jieungoalsettingapp.ui.home.Goal
 
 class DashboardViewModel : ViewModel() {
 
-    // LiveData to hold a text value for the dashboard fragment
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is dashboard Fragment"
-    }
-    val text: LiveData<String> = _text
+//    // LiveData to hold a text value for the dashboard fragment
+//    private val _text = MutableLiveData<String>().apply {
+//        value = "This is dashboard Fragment"
+//    }
+//    val text: LiveData<String> = _text
 
     // LiveData to hold a list of new goals
     private val _newGoalList = MutableLiveData<List<Goal>>()
@@ -28,5 +28,7 @@ class DashboardViewModel : ViewModel() {
         val currentList = _newGoalList.value ?: emptyList()
         // Update the LiveData with the new list of goals by adding the new goal to the existing list
         _newGoalList.value = currentList + listOf(goal)
+
     }
+
 }

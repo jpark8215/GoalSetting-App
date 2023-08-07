@@ -9,8 +9,12 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import com.example.jieungoalsettingapp.R
 import com.example.jieungoalsettingapp.databinding.FragmentHomeBinding
+import com.example.jieungoalsettingapp.ui.dashboard.DashboardFragment
 import com.example.jieungoalsettingapp.ui.dashboard.DashboardViewModel
 import com.google.android.material.textfield.TextInputEditText
 import java.net.URLEncoder
@@ -38,7 +42,7 @@ class HomeFragment : Fragment() {
     private lateinit var buttonSubmit: Button
     private lateinit var buttonGo: Button
 
-    private val dashboardViewModel: DashboardViewModel by viewModels()
+    private val dashboardViewModel: DashboardViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,25 +66,37 @@ class HomeFragment : Fragment() {
 
         // Set a click listener for the "Go" button
         buttonGo.setOnClickListener {
-            // Retrieve the input values from EditText fields
-            val specific = binding.specific.text?.toString()
-            val measurable = binding.measurable.text?.toString()
-            val attainable = binding.attainable.text?.toString()
-            val relevant = binding.relevant.text?.toString()
-            val timeBound = binding.timeBound.text?.toString()
+            try {
+                // Retrieve the input values from EditText fields
+                val specific = binding.specific.text?.toString()
+                val measurable = binding.measurable.text?.toString()
+                val attainable = binding.attainable.text?.toString()
+                val relevant = binding.relevant.text?.toString()
+                val timeBound = binding.timeBound.text?.toString()
 
-            // Check if all values are not null before creating a new Goal instance
-            if (specific != null && measurable != null && attainable != null && relevant != null && timeBound != null) {
-                // Create a new instance of the Goal class with the retrieved input
-                val newGoal = Goal(specific, measurable, attainable, relevant, timeBound)
+                // Check if all values are not null before creating a new Goal instance
+                if (specific?.isNotEmpty() == true && measurable?.isNotEmpty() == true && attainable?.isNotEmpty() == true && relevant?.isNotEmpty() == true && timeBound?.isNotEmpty() == true) {
+                    // Create a new instance of the Goal class with the retrieved input
+                    val newGoal = Goal(specific, measurable, attainable, relevant, timeBound)
 
-                // Add the newGoal to the list in DashboardViewModel
-                dashboardViewModel.addGoal(newGoal)
-            } else {
-                showToast("Please fill all fields.")
+                    // Add the newGoal to the list in DashboardViewModel
+                    dashboardViewModel.addGoal(newGoal)
+
+                    // Clear the input fields after clicking the "Go" button
+                    binding.specific.text?.clear()
+                    binding.measurable.text?.clear()
+                    binding.attainable.text?.clear()
+                    binding.relevant.text?.clear()
+                    binding.timeBound.text?.clear()
+
+                } else {
+                    showToast("Please fill all fields.")
+                }
+            } catch (e: Exception) {
+                showToast("An error occurred: ${e.message}")
+                e.printStackTrace()
             }
         }
-
         return root
     }
 

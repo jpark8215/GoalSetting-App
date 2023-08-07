@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,9 +38,11 @@ class GoalListAdapter(private var goals: List<Goal>) : RecyclerView.Adapter<Goal
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         // Inflate the item layout and create a ViewHolder instance
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_dashboard, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_goal, parent, false)
+
         return ViewHolder(view)
     }
+
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         // Bind the data at the given position to the ViewHolder
@@ -54,13 +57,12 @@ class GoalListAdapter(private var goals: List<Goal>) : RecyclerView.Adapter<Goal
     fun updateGoals(newGoals: List<Goal>) {
         // Update the list of goals and notify the adapter about the changes
         goals = newGoals
-        notifyDataSetChanged()
     }
 }
 
 class DashboardFragment : Fragment() {
     // Get an instance of the DashboardViewModel using viewModels() delegate
-    private val dashboardViewModel: DashboardViewModel by viewModels()
+    private val dashboardViewModel: DashboardViewModel by activityViewModels()
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
@@ -75,19 +77,19 @@ class DashboardFragment : Fragment() {
     ): View {
         // Inflate the layout for this fragment using view binding
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+//        val root: View = binding.root
+        return binding.root
 
-        // Set up the RecyclerView
-        val recyclerView: RecyclerView = binding.recyclerViewGoals
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        val adapter = GoalListAdapter(newGoalList)
-        recyclerView.adapter = adapter
-
-        return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Set up the RecyclerView
+        val recyclerView: RecyclerView = binding.recyclerViewGoals
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        val adapter = GoalListAdapter(emptyList()) // Start with an empty list of goals
+        recyclerView.adapter = adapter
 
         // Observe the newGoalList LiveData and update the RecyclerView when it changes
         dashboardViewModel.newGoalList.observe(viewLifecycleOwner, Observer { goals ->
