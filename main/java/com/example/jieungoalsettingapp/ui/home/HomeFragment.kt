@@ -7,15 +7,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.jieungoalsettingapp.R
 import com.example.jieungoalsettingapp.databinding.FragmentHomeBinding
 import com.example.jieungoalsettingapp.ui.dashboard.DashboardFragment
 import com.example.jieungoalsettingapp.ui.dashboard.DashboardViewModel
+import com.example.jieungoalsettingapp.ui.notifications.NotificationsViewModel
 import com.google.android.material.textfield.TextInputEditText
 import java.net.URLEncoder
 
@@ -38,8 +41,6 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var editTextUserInput: TextInputEditText
-    private lateinit var buttonSubmit: Button
     private lateinit var buttonGo: Button
 
     private val dashboardViewModel: DashboardViewModel by activityViewModels()
@@ -49,20 +50,16 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
+        val homeViewModel =
+            ViewModelProvider(this).get(HomeViewModel::class.java)
+
         // Inflate the layout for this fragment using view binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         // Initialize the views using view binding
-        editTextUserInput = binding.editTextUserInput
-        buttonSubmit = binding.buttonSubmit
         buttonGo = binding.buttonGo
-
-        // Set a click listener for the "Submit" button
-        buttonSubmit.setOnClickListener {
-            val userInput = editTextUserInput.text.toString()
-            performGoogleSearch(userInput)
-        }
 
         // Set a click listener for the "Go" button
         buttonGo.setOnClickListener {
@@ -97,23 +94,14 @@ class HomeFragment : Fragment() {
                 e.printStackTrace()
             }
         }
+
+        val textView: TextView = binding.textHome
+        homeViewModel.text.observe(viewLifecycleOwner) {
+            textView.text = it
+        }
         return root
     }
 
-    private fun performGoogleSearch(query: String) {
-        val encodedQuery = URLEncoder.encode(query, "utf-8")
-        val searchUrl = "https://www.google.com/search?q=$encodedQuery"
-
-        // Open the default browser with the search URL
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(searchUrl))
-
-        try {
-            startActivity(browserIntent)
-        } catch (e: Exception) {
-            showToast("Failed to open the browser.")
-            e.printStackTrace()
-        }
-    }
 
     private fun showToast(message: String) {
         // Show a short toast message
