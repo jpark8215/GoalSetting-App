@@ -1,8 +1,7 @@
 package com.example.jieungoalsettingapp.ui.home
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,28 +10,19 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
-import com.example.jieungoalsettingapp.R
 import com.example.jieungoalsettingapp.databinding.FragmentHomeBinding
-import com.example.jieungoalsettingapp.ui.dashboard.DashboardFragment
 import com.example.jieungoalsettingapp.ui.dashboard.DashboardViewModel
-import com.example.jieungoalsettingapp.ui.notifications.NotificationsViewModel
-import com.google.android.material.textfield.TextInputEditText
-import java.net.URLEncoder
 
 // Goal class representing a user's goal with specific, measurable, attainable, relevant, and time-bound properties
 class Goal(
     val specific: String,
     val measurable: String,
-    val attainable: String,
-    val relevant: String,
     val timeBound: String
 ) {
     override fun toString(): String {
         // Returns a formatted string representation of the goal's properties
-        return "Specific: $specific\nMeasurable: $measurable\nAttainable: $attainable\nRelevant: $relevant\nTime-bound: $timeBound"
+        return "Specific: $specific\nMeasurable: $measurable\nTime-bound: $timeBound"
     }
 }
 
@@ -67,14 +57,14 @@ class HomeFragment : Fragment() {
                 // Retrieve the input values from EditText fields
                 val specific = binding.specific.text?.toString()
                 val measurable = binding.measurable.text?.toString()
-                val attainable = binding.attainable.text?.toString()
-                val relevant = binding.relevant.text?.toString()
+//                val attainable = binding.attainable.text?.toString()
+//                val relevant = binding.relevant.text?.toString()
                 val timeBound = binding.timeBound.text?.toString()
 
                 // Check if all values are not null before creating a new Goal instance
-                if (specific?.isNotEmpty() == true && measurable?.isNotEmpty() == true && attainable?.isNotEmpty() == true && relevant?.isNotEmpty() == true && timeBound?.isNotEmpty() == true) {
+                if (specific?.isNotEmpty() == true && measurable?.isNotEmpty() == true && timeBound?.isNotEmpty() == true) {
                     // Create a new instance of the Goal class with the retrieved input
-                    val newGoal = Goal(specific, measurable, attainable, relevant, timeBound)
+                    val newGoal = Goal(specific, measurable, timeBound)
 
                     // Add the newGoal to the list in DashboardViewModel
                     dashboardViewModel.addGoal(newGoal)
@@ -82,8 +72,8 @@ class HomeFragment : Fragment() {
                     // Clear the input fields after clicking the "Go" button
                     binding.specific.text?.clear()
                     binding.measurable.text?.clear()
-                    binding.attainable.text?.clear()
-                    binding.relevant.text?.clear()
+//                    binding.attainable.text?.clear()
+//                    binding.relevant.text?.clear()
                     binding.timeBound.text?.clear()
 
                 } else {
@@ -101,6 +91,7 @@ class HomeFragment : Fragment() {
         }
         return root
     }
+
 
 
     private fun showToast(message: String) {

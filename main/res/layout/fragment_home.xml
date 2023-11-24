@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#ADD8E6"
     tools:context=".ui.home.HomeFragment">
 
     <TextView
@@ -14,6 +15,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
@@ -36,57 +38,35 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="85dp">
+            android:layout_height="100dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/specific"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Specific" />
+                android:hint="What do you want to achieve?" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="85dp">
+            android:layout_height="100dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/measurable"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Measurable" />
+                android:hint="Set your numeric/ measurable goal." />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="85dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/attainable"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Attainable" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="85dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/relevant"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Relevant" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="85dp">
+            android:layout_height="100dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/timeBound"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Time" />
+                android:hint="Give yourself a time frame to achieve it in days." />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
@@ -95,13 +75,6 @@
             android:layout_height="50dp"
             android:text="Let's Go" />
     </LinearLayout>
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_begin="20dp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

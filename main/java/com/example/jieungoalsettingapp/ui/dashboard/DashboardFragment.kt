@@ -24,16 +24,12 @@ class GoalListAdapter(private var goals: List<Goal>) : RecyclerView.Adapter<Goal
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val specificTextView: TextView = view.findViewById(R.id.specific)
         private val measurableTextView: TextView = view.findViewById(R.id.measurable)
-        private val attainableTextView: TextView = view.findViewById(R.id.attainable)
-        private val relevantTextView: TextView = view.findViewById(R.id.relevant)
         private val timeBoundTextView: TextView = view.findViewById(R.id.timeBound)
 
         // Bind the goal properties to the views in the item layout
         fun bind(goal: Goal) {
             specificTextView.text = goal.specific
             measurableTextView.text = goal.measurable
-            attainableTextView.text = goal.attainable
-            relevantTextView.text = goal.relevant
             timeBoundTextView.text = goal.timeBound
         }
     }
