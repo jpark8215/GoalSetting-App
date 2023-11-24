@@ -11,10 +11,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import com.example.jieungoalsettingapp.R
 import com.example.jieungoalsettingapp.databinding.FragmentHomeBinding
 import com.example.jieungoalsettingapp.ui.dashboard.DashboardViewModel
 
-// Goal class representing a user's goal with specific, measurable, attainable, relevant, and time-bound properties
+// Goal class representing a user's goal with specific, measurable, and time-bound properties
 class Goal(
     val specific: String,
     val measurable: String,
@@ -57,8 +59,6 @@ class HomeFragment : Fragment() {
                 // Retrieve the input values from EditText fields
                 val specific = binding.specific.text?.toString()
                 val measurable = binding.measurable.text?.toString()
-//                val attainable = binding.attainable.text?.toString()
-//                val relevant = binding.relevant.text?.toString()
                 val timeBound = binding.timeBound.text?.toString()
 
                 // Check if all values are not null before creating a new Goal instance
@@ -72,9 +72,11 @@ class HomeFragment : Fragment() {
                     // Clear the input fields after clicking the "Go" button
                     binding.specific.text?.clear()
                     binding.measurable.text?.clear()
-//                    binding.attainable.text?.clear()
-//                    binding.relevant.text?.clear()
                     binding.timeBound.text?.clear()
+
+                    // Use Navigation component to navigate to the dashboard view
+                    findNavController().popBackStack()
+                    findNavController().navigate(R.id.navigation_dashboard)
 
                 } else {
                     showToast("Please fill all fields.")
@@ -85,10 +87,10 @@ class HomeFragment : Fragment() {
             }
         }
 
-        val textView: TextView = binding.textHome
-        homeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
+//        val textView: TextView = binding.textHome
+//        homeViewModel.text.observe(viewLifecycleOwner) {
+//            textView.text = it
+//        }
         return root
     }
 

@@ -15,8 +15,11 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:textAlignment="center"
+        android:text="@string/app_name"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:textSize="20sp"
+        android:textSize="35sp"
+        android:textColor="#4B0082"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -27,14 +30,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="@id/text_home">
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -55,7 +56,7 @@
                 android:id="@+id/measurable"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Set your numeric/ measurable goal." />
+                android:hint="What is your starting point in Number?" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -66,7 +67,7 @@
                 android:id="@+id/timeBound"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Give yourself a time frame to achieve it in days." />
+                android:hint="What is your time frame in Month?" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button

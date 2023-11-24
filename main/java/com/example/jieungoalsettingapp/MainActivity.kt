@@ -1,3 +1,4 @@
+// Import necessary packages and classes
 package com.example.jieungoalsettingapp
 
 import android.os.Bundle
@@ -9,10 +10,13 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.jieungoalsettingapp.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
+// Declare the MainActivity class, extending AppCompatActivity
 class MainActivity : AppCompatActivity() {
 
+    // Declare a late-initialized variable for view binding
     private lateinit var binding: ActivityMainBinding
 
+    // The entry point of the activity
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -40,14 +44,19 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
     }
 
-    // The following functions are used for navigation using the ActionBar
+    // Override the onSupportNavigateUp function to handle Up navigation
     override fun onSupportNavigateUp(): Boolean {
+        // Get the NavController associated with the NavHostFragment
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
+        // Perform Up navigation or call the default behavior
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
+    // Override the onBackPressed function to handle custom back navigation
     override fun onBackPressed() {
+        // Get the NavController associated with the NavHostFragment
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
+        // Check if the back stack is empty
         if (!navController.popBackStack()) {
             // If the back stack is empty, call the default onBackPressed behavior
             super.onBackPressed()

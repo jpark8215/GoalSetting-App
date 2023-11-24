@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.jieungoalsettingapp.ui.home.Goal
 
+// Declare the DashboardViewModel class, extending ViewModel
 class DashboardViewModel : ViewModel() {
 
     // LiveData to hold a text value for the dashboard fragment
@@ -26,9 +27,17 @@ class DashboardViewModel : ViewModel() {
     fun addGoal(goal: Goal) {
         // Get the current list of goals from the LiveData or use an empty list if it's null
         val currentList = _newGoalList.value ?: emptyList()
+
+        // Hard-coded strings before the entered value
+        val hardCodedStrings = listOf(" My Goal: ", " Goal achieved when I reached: ", " In ", " Months")
+
+        // Combine the hard-coded strings and the entered value into a new goal
+        val newGoal = Goal(
+            hardCodedStrings.getOrNull(0) + goal.specific,
+            hardCodedStrings.getOrNull(1) + goal.measurable,
+            hardCodedStrings.getOrNull(2) + goal.timeBound + hardCodedStrings.getOrNull(3)
+        )
         // Update the LiveData with the new list of goals by adding the new goal to the existing list
-        _newGoalList.value = currentList + listOf(goal)
-
+        _newGoalList.value = currentList + listOf(newGoal)
     }
-
 }
