@@ -29,7 +29,7 @@ class DashboardViewModel : ViewModel() {
         val currentList = _newGoalList.value ?: emptyList()
 
         // Hard-coded strings before the entered value
-        val hardCodedStrings = listOf(" My Goal: ", " Goal achieved when I reached: ", " In ", " Months")
+        val hardCodedStrings = listOf(" My Goal: ", " My Current Status: ", " Will Achieve In: ", " Months")
 
         // Combine the hard-coded strings and the entered value into a new goal
         val newGoal = Goal(

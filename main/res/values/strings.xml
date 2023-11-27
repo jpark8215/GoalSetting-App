@@ -5,4 +5,11 @@
     <string name="title_notifications">Notifications</string>
     <string name="submit">Submit</string>
     <string name="textview">TextView</string>
+    <string name="search_how_to_achieve_your_goal">Search how to achieve your goal!</string>
+    <string name="what_do_you_want_to_achieve">What do you want to achieve?</string>
+    <string name="what_is_your_starting_point_in_number">What is your starting point in Number?</string>
+    <string name="what_is_your_time_frame_in_month">What is your time frame in Month?</string>
+    <string name="let_s_go">Let\'s Go</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
 </resources>

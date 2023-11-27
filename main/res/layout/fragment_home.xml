@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ADD8E6"
+    android:background="#B0C4DE"
     tools:context=".ui.home.HomeFragment">
 
     <TextView
@@ -18,7 +18,6 @@
         android:text="@string/app_name"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textSize="35sp"
-        android:textColor="#4B0082"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
@@ -45,7 +44,7 @@
                 android:id="@+id/specific"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="What do you want to achieve?" />
+                android:hint="@string/what_do_you_want_to_achieve" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -56,7 +55,7 @@
                 android:id="@+id/measurable"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="What is your starting point in Number?" />
+                android:hint="@string/what_is_your_starting_point_in_number" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -67,14 +66,14 @@
                 android:id="@+id/timeBound"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="What is your time frame in Month?" />
+                android:hint="@string/what_is_your_time_frame_in_month" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/buttonGo"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:text="Let's Go" />
+            android:text="@string/let_s_go" />
     </LinearLayout>
 
 
