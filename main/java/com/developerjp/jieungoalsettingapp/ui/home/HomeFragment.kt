@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -13,18 +15,10 @@ import androidx.navigation.fragment.findNavController
 import com.developerjp.jieungoalsettingapp.R
 import com.developerjp.jieungoalsettingapp.databinding.FragmentHomeBinding
 import com.developerjp.jieungoalsettingapp.ui.dashboard.DashboardViewModel
-
-// Goal class representing a user's goal with specific, measurable, and time-bound properties
-class Goal(
-    val specific: String,
-    val measurable: String,
-    val timeBound: String
-) {
-    override fun toString(): String {
-        // Returns a formatted string representation of the goal's properties
-        return "Specific: $specific\nMeasurable: $measurable\nTime-bound: $timeBound"
-    }
-}
+import com.google.android.material.datepicker.MaterialDatePicker
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class HomeFragment : Fragment() {
 
@@ -32,6 +26,8 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var buttonGo: Button
+    private lateinit var timeBoundButton: TextView
+    private lateinit var measurableSeekBar: SeekBar
 
     private val dashboardViewModel: DashboardViewModel by activityViewModels()
 
@@ -50,17 +46,24 @@ class HomeFragment : Fragment() {
 
         // Initialize the views using view binding
         buttonGo = binding.buttonGo
+        timeBoundButton = binding.timeBound
+        measurableSeekBar = binding.measurable
+
+        // Set a click listener for the "timeBound" field to show the date picker
+        timeBoundButton.setOnClickListener {
+            showDatePicker()
+        }
 
         // Set a click listener for the "Go" button
         buttonGo.setOnClickListener {
             try {
                 // Retrieve the input values from EditText fields
                 val specific = binding.specific.text?.toString()
-                val measurable = binding.measurable.text?.toString()
-                val timeBound = binding.timeBound.text?.toString()
+                val measurable = measurableSeekBar.progress.toString()
+                val timeBound = timeBoundButton.text?.toString()
 
                 // Check if all values are not null before creating a new Goal instance
-                if (specific?.isNotEmpty() == true && measurable?.isNotEmpty() == true && timeBound?.isNotEmpty() == true) {
+                if (specific?.isNotEmpty() == true && measurable.isNotEmpty() && timeBound?.isNotEmpty() == true && timeBound != getString(R.string.select_date)) {
                     // Create a new instance of the Goal class with the retrieved input
                     val newGoal = Goal(specific, measurable, timeBound)
 
@@ -69,8 +72,8 @@ class HomeFragment : Fragment() {
 
                     // Clear the input fields after clicking the "Go" button
                     binding.specific.text?.clear()
-                    binding.measurable.text?.clear()
-                    binding.timeBound.text?.clear()
+                    measurableSeekBar.progress = 2
+                    timeBoundButton.text = getString(R.string.`when`)
 
                     // Use Navigation component to navigate to the dashboard view
                     findNavController().popBackStack()
@@ -88,7 +91,19 @@ class HomeFragment : Fragment() {
         return root
     }
 
+    private fun showDatePicker() {
+        val datePicker = MaterialDatePicker.Builder.datePicker()
+            .setTitleText("Select Date")
+            .build()
 
+        datePicker.addOnPositiveButtonClickListener { selection ->
+            val selectedDate = Date(selection)
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            timeBoundButton.text = dateFormat.format(selectedDate)
+        }
+
+        datePicker.show(parentFragmentManager, "DATE_PICKER")
+    }
 
     private fun showToast(message: String) {
         // Show a short toast message
@@ -101,3 +116,4 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 }
+
