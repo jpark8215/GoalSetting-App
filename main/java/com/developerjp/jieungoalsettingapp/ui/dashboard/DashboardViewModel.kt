@@ -1,47 +1,112 @@
 package com.developerjp.jieungoalsettingapp.ui.dashboard
 
+import android.app.Application
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.developerjp.jieungoalsettingapp.ui.home.Goal
+import androidx.recyclerview.widget.RecyclerView
+import com.developerjp.jieungoalsettingapp.R
+import com.developerjp.jieungoalsettingapp.data.DBHelper
+import com.developerjp.jieungoalsettingapp.data.GoalDetail
 
-// Declare the DashboardViewModel class, extending ViewModel
-class DashboardViewModel : ViewModel() {
+class DashboardViewModel(application: Application) : AndroidViewModel(application) {
 
-    // LiveData to hold a text value for the dashboard fragment
+    val dbHelper = DBHelper(application)
     private val _text = MutableLiveData<String>().apply {
         value = "This is dashboard Fragment"
     }
     val text: LiveData<String> = _text
 
-    // LiveData to hold a list of new goals
-    private val _newGoalList = MutableLiveData<List<Goal>>()
-    val newGoalList: LiveData<List<Goal>> get() = _newGoalList
+    private val _newGoalList = MutableLiveData<List<GoalDetail>>()
+    val newGoalList: LiveData<List<GoalDetail>> get() = _newGoalList
 
-    // Initialize the list with an empty list when the ViewModel is created
     init {
-        _newGoalList.value = emptyList()
+        _newGoalList.value = fetchGoalsFromDatabase()
     }
 
-    // Function to add a new goal to the list
-    fun addGoal(goal: Goal) {
-        // Get the current list of goals from the LiveData or use an empty list if it's null
-        val currentList = _newGoalList.value ?: emptyList()
+    private fun fetchGoalsFromDatabase(): List<GoalDetail> {
+        val goalDetails = dbHelper.allGoalDetailsWithSpecificText
+        val updatedList = mutableListOf<GoalDetail>()
 
-        // Hard-coded strings before the entered value
-        val hardCodedStrings = listOf(" My Goal: ", " Achieved ", "%", " Will Achieve by: ")
+        for (detail in goalDetails) {
+            val newGoalDetail = GoalDetail(
+                detail.id,
+                detail.specificId,
+                detail.measurable,
+                detail.timeBound,
+                detail.timestamp,
+                detail.specificText
 
-        // Calculate the percentage by multiplying the measurable value by 10
-        val percentage = goal.measurable.toIntOrNull()?.times(10)?.toString() ?: "0"
+            )
 
-        // Combine the hard-coded strings and the entered value into a new goal
-        val newGoal = Goal(
-            hardCodedStrings[0] + goal.specific,
-            hardCodedStrings[1] + percentage + hardCodedStrings[2],
-             hardCodedStrings[3] + goal.timeBound
+            updatedList.add(newGoalDetail)
+        }
+
+        return updatedList
+    }
+
+    fun addGoal(goalDetail: GoalDetail) {
+        val specificId = dbHelper.insertSpecific(goalDetail.specificText)
+        val timestamp = System.currentTimeMillis()
+
+        dbHelper.insertGoalDetail(
+            specificId.toInt(),
+            goalDetail.measurable,
+            goalDetail.timeBound,
+            timestamp
         )
+        _newGoalList.value = fetchGoalsFromDatabase()
+    }
 
-        // Update the LiveData with the new list of goals by adding the new goal to the existing list
-        _newGoalList.value = currentList + listOf(newGoal)
+
+    class GoalAdapter(private var goalDetails: List<GoalDetail>, private val dbHelper: DBHelper) : RecyclerView.Adapter<GoalAdapter.ViewHolder>() {
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view =
+                LayoutInflater.from(parent.context).inflate(R.layout.item_goal, parent, false)
+            return ViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val goalDetails = goalDetails[position]
+            holder.bind(goalDetails, dbHelper)
+        }
+
+        override fun getItemCount(): Int {
+            return goalDetails.size
+        }
+
+        // Method to update the list of goals
+        fun updateGoalDetails(newGoalDetails: List<GoalDetail>) {
+            goalDetails = newGoalDetails
+            notifyDataSetChanged()
+        }
+
+        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            private val specificTextView: TextView = itemView.findViewById(R.id.specific_text)
+            private val measurableTextView: TextView = itemView.findViewById(R.id.measurable_text)
+            private val timeBoundTextView: TextView = itemView.findViewById(R.id.time_bound_text)
+
+            fun bind(goal: GoalDetail, dbHelper: DBHelper) {
+                specificTextView.text = goal.specificText
+
+                // Fetch GoalDetail using the specificId
+                val goalDetail = dbHelper.getGoalDetailBySpecificId(goal.id)
+
+                // If goalDetail is not null, bind its data to the views
+                if (goalDetail != null) {
+                    measurableTextView.text = goalDetail.measurable.toString()
+                    timeBoundTextView.text = goalDetail.timeBound
+                } else {
+                    measurableTextView.text = ""
+                    timeBoundTextView.text = ""
+                }
+            }
+        }
     }
 }
+

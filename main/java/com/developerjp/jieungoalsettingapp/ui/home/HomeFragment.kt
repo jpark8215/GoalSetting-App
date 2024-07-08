@@ -10,9 +10,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.developerjp.jieungoalsettingapp.R
+import com.developerjp.jieungoalsettingapp.data.DBHelper
 import com.developerjp.jieungoalsettingapp.databinding.FragmentHomeBinding
 import com.developerjp.jieungoalsettingapp.ui.dashboard.DashboardViewModel
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -30,6 +30,7 @@ class HomeFragment : Fragment() {
     private lateinit var measurableSeekBar: SeekBar
 
     private val dashboardViewModel: DashboardViewModel by activityViewModels()
+    private lateinit var dbHelper: DBHelper
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,8 +38,7 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        val homeViewModel =
-            ViewModelProvider(this).get(HomeViewModel::class.java)
+        dbHelper = DBHelper(requireContext()) // Initialize GoalDbHelper
 
         // Inflate the layout for this fragment using view binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -64,11 +64,14 @@ class HomeFragment : Fragment() {
 
                 // Check if all values are not null before creating a new Goal instance
                 if (specific?.isNotEmpty() == true && measurable.isNotEmpty() && timeBound?.isNotEmpty() == true && timeBound != getString(R.string.select_date)) {
-                    // Create a new instance of the Goal class with the retrieved input
-                    val newGoal = Goal(specific, measurable, timeBound)
+                    // Insert into specific_table and get the specificId
+                    val specificId = dbHelper.insertSpecific(specific)
 
-                    // Add the newGoal to the list in DashboardViewModel
-                    dashboardViewModel.addGoal(newGoal)
+                    // Get current timestamp
+                    val timestamp = System.currentTimeMillis()
+
+                    // Insert into goal_table
+                    dbHelper.insertGoalDetail(specificId.toInt(), measurable.toInt(), timeBound, timestamp)
 
                     // Clear the input fields after clicking the "Go" button
                     binding.specific.text?.clear()
