@@ -4,17 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.developerjp.jieungoalsettingapp.databinding.FragmentDashboardBinding
 
 class DashboardFragment : Fragment() {
 
-    private val dashboardViewModel: DashboardViewModel by activityViewModels()
+    private val dashboardViewModel: DashboardViewModel by viewModels()
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
 
@@ -31,32 +28,17 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val textView: TextView = binding.textDashboard
-        dashboardViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+        adapter = DashboardViewModel.GoalAdapter(emptyList(), dashboardViewModel)
+        binding.recyclerViewGoals.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerViewGoals.adapter = adapter
+
+        dashboardViewModel.goalList.observe(viewLifecycleOwner) { goals ->
+            adapter.updateGoalDetails(goals)
         }
-
-        // Set up the RecyclerView
-        val recyclerView: RecyclerView = binding.recyclerViewGoals
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        // Initialize the adapter
-        adapter = DashboardViewModel.GoalAdapter(emptyList(), dashboardViewModel.dbHelper)
-        recyclerView.adapter = adapter
-
-        // Observe the newGoalList LiveData and update the RecyclerView when it changes
-        dashboardViewModel.newGoalList.observe(viewLifecycleOwner, Observer { goals ->
-            goals?.let {
-                adapter.updateGoalDetails(it)
-            }
-        })
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-
-
 }
-

@@ -34,9 +34,10 @@
                     android:id="@+id/specific_text_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Goal: "
                     android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp" />
+                    android:layout_marginEnd="8dp"
+                    android:text="Goal:  "
+                    android:textAllCaps="true" />
 
                 <TextView
                     android:id="@+id/specific_text"
@@ -61,9 +62,10 @@
                     android:id="@+id/measurable_text_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Achieved: "
                     android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp" />
+                    android:layout_marginEnd="8dp"
+                    android:text="Achieved:  "
+                    android:textAllCaps="true" />
 
                 <TextView
                     android:id="@+id/measurable_text"
@@ -87,7 +89,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="Target Date: " />
+                    android:text="Target Date:  "
+                    android:textAllCaps="true" />
 
                 <TextView
                     android:id="@+id/time_bound_text"
@@ -98,6 +101,56 @@
                     android:layout_weight="1"
                     tools:text="Time Bound" />
             </LinearLayout>
+
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/line_chart"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/time_bound_text" />
+
+            <!-- Buttons: Success, Edit, Delete -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/button_success"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:text="Success"
+                    android:textSize="10sp" />
+
+                <Button
+                    android:id="@+id/button_edit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:text="Edit"
+                    android:textSize="10sp" />
+
+                <Button
+                    android:id="@+id/button_delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:text="Delete"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
 
         </LinearLayout>
 

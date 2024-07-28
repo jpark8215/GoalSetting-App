@@ -38,7 +38,7 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        dbHelper = DBHelper(requireContext()) // Initialize GoalDbHelper
+        dbHelper = DBHelper.getInstance(requireContext()) // Initialize DBHelper using getInstance method
 
         // Inflate the layout for this fragment using view binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -119,4 +119,3 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 }
-

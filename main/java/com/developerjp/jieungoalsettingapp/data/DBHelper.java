@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -62,8 +64,24 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String SQL_DELETE_GOAL_DETAIL_TABLE =
             "DROP TABLE IF EXISTS " + TABLE_GOAL_DETAIL;
 
-    public DBHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    // Singleton instance
+    private static volatile DBHelper instance;
+
+    // Private constructor to prevent direct instantiation
+    private DBHelper(Context context) {
+        super(context.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    // getInstance method for Singleton
+    public static DBHelper getInstance(Context context) {
+        if (instance == null) {
+            synchronized (DBHelper.class) {
+                if (instance == null) {
+                    instance = new DBHelper(context);
+                }
+            }
+        }
+        return instance;
     }
 
     @Override
@@ -119,6 +137,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return goalDetailId;
     }
+
+
+
+
 
     public List<GoalDetail> getAllGoalDetailsWithSpecificText() {
         SQLiteDatabase db = getReadableDatabase();
@@ -191,6 +213,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return goalDetailList;
     }
 
+
     private String getSpecificText(int specificId) {
         SQLiteDatabase db = getReadableDatabase();
         String specificText = "";
@@ -235,7 +258,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return specificText;
     }
-
 
 
     public GoalDetail getGoalDetailBySpecificId(int specificId) {
@@ -303,6 +325,75 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
 
         return goalDetail;
+    }
+
+
+    public void deleteGoalsBySpecificId(int specificId) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            db.beginTransaction();
+
+            // Delete rows from goal_detail_table with the given specific_id
+            String goalDetailSelection = GOAL_DETAIL_COLUMN_SPECIFIC_ID + " = ?";
+            String[] goalDetailSelectionArgs = {String.valueOf(specificId)};
+            db.delete(TABLE_GOAL_DETAIL, goalDetailSelection, goalDetailSelectionArgs);
+
+            // Delete the row from goal_table with the given specific_id
+            String specificSelection = SPECIFIC_COLUMN_ID + " = ?";
+            String[] specificSelectionArgs = {String.valueOf(specificId)};
+            db.delete(TABLE_GOAL, specificSelection, specificSelectionArgs);
+
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.endTransaction();
+            db.close(); // Close database connection
+        }
+    }
+
+
+    public void updateGoalDetail(int specificId, @NotNull String specificText, int measurable, @NotNull String timeBound) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        try {
+            // Check if specificId already exists in goal_table
+            String[] specificProjection = { SPECIFIC_COLUMN_ID };
+            String specificSelection = SPECIFIC_COLUMN_ID + " = ?";
+            String[] specificSelectionArgs = { String.valueOf(specificId) };
+
+            Cursor cursor = db.query(TABLE_GOAL, specificProjection, specificSelection, specificSelectionArgs, null, null, null);
+            if (cursor.moveToFirst()) {
+                // specificId exists, update the specificText
+                ContentValues specificValues = new ContentValues();
+                specificValues.put(SPECIFIC_COLUMN_TEXT, specificText);
+
+                db.update(TABLE_GOAL, specificValues, specificSelection, specificSelectionArgs);
+            } else {
+                // specificId does not exist, insert it
+                ContentValues specificValues = new ContentValues();
+                specificValues.put(SPECIFIC_COLUMN_ID, specificId);
+                specificValues.put(SPECIFIC_COLUMN_TEXT, specificText);
+
+                db.insert(TABLE_GOAL, null, specificValues);
+            }
+            cursor.close();
+
+            // Insert new row in goal_detail_table with timestamp
+            ContentValues goalDetailValues = new ContentValues();
+            goalDetailValues.put(GOAL_DETAIL_COLUMN_SPECIFIC_ID, specificId);
+            goalDetailValues.put(GOAL_DETAIL_COLUMN_MEASURABLE, measurable);
+            goalDetailValues.put(GOAL_DETAIL_COLUMN_TIME_BOUND, timeBound);
+            goalDetailValues.put(GOAL_DETAIL_COLUMN_TIMESTAMP, DATE_FORMAT.format(new Date())); // Current timestamp
+
+            db.insert(TABLE_GOAL_DETAIL, null, goalDetailValues);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.close();
+        }
     }
 
 }
