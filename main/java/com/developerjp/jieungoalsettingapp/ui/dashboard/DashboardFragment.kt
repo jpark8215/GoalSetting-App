@@ -28,12 +28,12 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = DashboardViewModel.GoalAdapter(emptyList(), dashboardViewModel)
+        adapter = DashboardViewModel.GoalAdapter(emptyMap(), dashboardViewModel)
         binding.recyclerViewGoals.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewGoals.adapter = adapter
 
-        dashboardViewModel.goalList.observe(viewLifecycleOwner) { goals ->
-            adapter.updateGoalDetails(goals)
+        dashboardViewModel.goalList.observe(viewLifecycleOwner) { groupedGoalDetails ->
+            adapter.updateGoalDetails(groupedGoalDetails)
         }
     }
 
@@ -41,4 +41,5 @@ class DashboardFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
 }

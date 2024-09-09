@@ -14,7 +14,7 @@
 
     <string name="select_date">Select Date</string>
     <string name="goal_measure">How close are you to your goal?</string>
-    <string name="very_far">Very Far</string>
-    <string name="very_close">Very Close</string>
+    <string name="very_far">Far - 0%</string>
+    <string name="very_close">Close - 100%</string>
 
 </resources>
