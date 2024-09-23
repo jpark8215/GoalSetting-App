@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -99,6 +100,30 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+
+    public boolean isSpecificExists(String specificText) {
+        SQLiteDatabase db = getWritableDatabase();
+        boolean exists = false;
+
+        try {
+            String query = "SELECT * FROM " + TABLE_GOAL + " WHERE " + SPECIFIC_COLUMN_TEXT + " = ?";
+            Cursor cursor = db.rawQuery(query, new String[]{specificText});
+
+            if (cursor.moveToFirst()) {
+                exists = true; // Duplicate found
+            }
+
+            cursor.close(); // Close the cursor after use
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.close(); // Close database connection
+        }
+
+        return exists;
+    }
+
+
     public long insertSpecific(String specificText) {
         SQLiteDatabase db = getWritableDatabase();
         long specificId = -1;
@@ -116,6 +141,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return specificId;
     }
+
 
     public long insertGoalDetail(int specificId, int measurable, String timeBound, long timestamp) {
         SQLiteDatabase db = getWritableDatabase();
@@ -245,7 +271,7 @@ public class DBHelper extends SQLiteOpenHelper {
                         specificText = cursor.getString(columnIndex);
                     } else {
                         // Handle the case where the column index is missing
-                        // You might log an error or throw an exception depending on your app's requirements
+                        Log.e("DBHelper", "Column '" + SPECIFIC_COLUMN_TEXT + "' not found in the database.");
                     }
                 }
             } finally {

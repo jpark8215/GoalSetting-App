@@ -2,7 +2,7 @@
     <string name="app_name">GoalCraft</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_achievements">Achievements</string>
     <string name="submit">Submit</string>
     <string name="textview">TextView</string>
     <string name="search_how_to_achieve_your_goal">Search how to achieve your goal!</string>

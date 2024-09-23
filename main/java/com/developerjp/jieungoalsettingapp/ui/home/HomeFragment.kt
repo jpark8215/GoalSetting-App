@@ -1,5 +1,6 @@
 package com.developerjp.jieungoalsettingapp.ui.home
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -84,24 +85,38 @@ class HomeFragment : Fragment() {
 
                 // Check if all values are not null before creating a new Goal instance
                 if (specific?.isNotEmpty() == true && measurable.isNotEmpty() && timeBound?.isNotEmpty() == true && timeBound != getString(R.string.select_date)) {
-                    // Insert into specific_table and get the specificId
-                    val specificId = dbHelper.insertSpecific(specific)
+                    if (dbHelper.isSpecificExists(specific) ){
+                        AlertDialog.Builder(context)
+                            .setTitle("Duplicate Goal")
+                            .setMessage("A goal with this title already exists. Please choose a different title.")
+                            .setPositiveButton("OK", null)
+                            .show()
 
-                    // Get current timestamp
-                    val timestamp = System.currentTimeMillis()
+                    } else {
 
-                    // Insert into goal_table
-                    dbHelper.insertGoalDetail(specificId.toInt(), measurable.toInt(), timeBound, timestamp)
+                        // Insert into specific_table and get the specificId
+                        val specificId = dbHelper.insertSpecific(specific)
 
-                    // Clear the input fields after clicking the "Go" button
-                    binding.specific.text?.clear()
-                    measurableSeekBar.progress = 20
-                    timeBoundButton.text = getString(R.string.`when`)
+                        // Get current timestamp
+                        val timestamp = System.currentTimeMillis()
 
-                    // Use Navigation component to navigate to the dashboard view
-                    findNavController().popBackStack()
-                    findNavController().navigate(R.id.navigation_dashboard)
+                        // Insert into goal_table
+                        dbHelper.insertGoalDetail(
+                            specificId.toInt(),
+                            measurable.toInt(),
+                            timeBound,
+                            timestamp
+                        )
 
+                        // Clear the input fields after clicking the "Go" button
+                        binding.specific.text?.clear()
+                        measurableSeekBar.progress = 20
+                        timeBoundButton.text = getString(R.string.`when`)
+
+                        // Use Navigation component to navigate to the dashboard view
+                        findNavController().popBackStack()
+                        findNavController().navigate(R.id.navigation_dashboard)
+                    }
                 } else {
                     showToast("Please fill all fields.")
                 }
@@ -143,104 +158,3 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 }
-
-
-//class HomeFragment : Fragment() {
-//
-//    private var _binding: FragmentHomeBinding? = null
-//    private val binding get() = _binding!!
-//
-//    private lateinit var buttonGo: Button
-//    private lateinit var timeBoundButton: TextView
-//    private lateinit var measurableSeekBar: SeekBar
-//
-//    private val dashboardViewModel: DashboardViewModel by activityViewModels()
-//    private lateinit var dbHelper: DBHelper
-//
-//    override fun onCreateView(
-//        inflater: LayoutInflater,
-//        container: ViewGroup?,
-//        savedInstanceState: Bundle?
-//    ): View {
-//
-//        dbHelper = DBHelper.getInstance(requireContext()) // Initialize DBHelper using getInstance method
-//
-//        // Inflate the layout for this fragment using view binding
-//        _binding = FragmentHomeBinding.inflate(inflater, container, false)
-//        val root: View = binding.root
-//
-//        // Initialize the views using view binding
-//        buttonGo = binding.buttonGo
-//        timeBoundButton = binding.timeBound
-//        measurableSeekBar = binding.measurable
-//
-//        // Set a click listener for the "timeBound" field to show the date picker
-//        timeBoundButton.setOnClickListener {
-//            showDatePicker()
-//        }
-//
-//        // Set a click listener for the "Go" button
-//        buttonGo.setOnClickListener {
-//            try {
-//                // Retrieve the input values from EditText fields
-//                val specific = binding.specific.text?.toString()
-//                val measurable = measurableSeekBar.progress.toString()
-//                val timeBound = timeBoundButton.text?.toString()
-//
-//                // Check if all values are not null before creating a new Goal instance
-//                if (specific?.isNotEmpty() == true && measurable.isNotEmpty() && timeBound?.isNotEmpty() == true && timeBound != getString(R.string.select_date)) {
-//                    // Insert into specific_table and get the specificId
-//                    val specificId = dbHelper.insertSpecific(specific)
-//
-//                    // Get current timestamp
-//                    val timestamp = System.currentTimeMillis()
-//
-//                    // Insert into goal_table
-//                    dbHelper.insertGoalDetail(specificId.toInt(), measurable.toInt(), timeBound, timestamp)
-//
-//                    // Clear the input fields after clicking the "Go" button
-//                    binding.specific.text?.clear()
-//                    measurableSeekBar.progress = 20
-//                    timeBoundButton.text = getString(R.string.`when`)
-//
-//                    // Use Navigation component to navigate to the dashboard view
-//                    findNavController().popBackStack()
-//                    findNavController().navigate(R.id.navigation_dashboard)
-//
-//                } else {
-//                    showToast("Please fill all fields.")
-//                }
-//            } catch (e: Exception) {
-//                showToast("An error occurred: ${e.message}")
-//                e.printStackTrace()
-//            }
-//        }
-//
-//        return root
-//    }
-//
-//    private fun showDatePicker() {
-//        val datePicker = MaterialDatePicker.Builder.datePicker()
-//            .setTitleText("Select Date")
-//            .build()
-//
-//        datePicker.addOnPositiveButtonClickListener { selection ->
-//            val selectedDate = Date(selection)
-//            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-//            timeBoundButton.text = dateFormat.format(selectedDate)
-//        }
-//
-//        datePicker.show(parentFragmentManager, "DATE_PICKER")
-//    }
-//
-//    private fun showToast(message: String) {
-//        // Show a short toast message
-//        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-//    }
-//
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        // Clear the binding reference to avoid memory leaks
-//        _binding = null
-//    }
-//}

@@ -36,12 +36,12 @@ import java.util.Locale
 
 class DashboardViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val dbHelper = DBHelper.getInstance(application)
-
     private val _text = MutableLiveData<String>().apply {
         value = "This is dashboard Fragment"
     }
     val text: LiveData<String> = _text
+
+    private val dbHelper = DBHelper.getInstance(application)
 
     private val _goalList = MutableLiveData<Map<Int, List<GoalDetail>>>()
     val goalList: LiveData<Map<Int, List<GoalDetail>>> get() = _goalList
@@ -77,6 +77,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         )
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
     }
+
 
     // Delete goals by specific ID
     fun deleteGoalsBySpecificId(specificId: Int) {
@@ -119,10 +120,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             private val editButton: Button = itemView.findViewById(R.id.button_edit)
             private val successButton: Button = itemView.findViewById(R.id.button_success)
 
-
             private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-            // Function to parse date string into Date object
             private fun parseDate(dateString: String?): Date {
                 return try {
                     dateString?.let { dateFormat.parse(it) } ?: Date()
@@ -143,94 +142,112 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     measurableTextView.text = "${latestGoalDetail.measurable}%"
                     timeBoundTextView.text = latestGoalDetail.timeBound
 
-                    // Create entries for the chart using all goal details
+                    // Create chart entries using all goal details
                     val entries = sortedGoalDetails.map { goalDetail ->
                         val timestampFloat = goalDetail.timestamp.time.toFloat()
-                        Log.d("GoalAdapter", "Timestamp: ${goalDetail.timestamp}, Float: $timestampFloat, Measurable: ${goalDetail.measurable.toFloat()}")
+                        Log.d("GoalAdapter", "Timestamp: ${goalDetail.timestamp}, Float: $timestampFloat, Measurable: ${goalDetail.measurable}")
                         Entry(timestampFloat, goalDetail.measurable.toFloat())
                     }
 
-                    val dataSet = LineDataSet(entries, "%").apply {
-                        color = Color.BLUE
-                        valueTextColor = Color.BLACK
-                        lineWidth = 2f
-                        setDrawCircles(true)
-                        setDrawCircleHole(true)
-                        setDrawValues(true)
-                    }
+                    if (entries.isNotEmpty()) {
+                        val dataSet = LineDataSet(entries, "%").apply {
+                            color = Color.BLUE
+                            valueTextColor = Color.BLACK
+                            lineWidth = 2f
+                            setDrawCircles(true)
+                            setDrawCircleHole(true)
+                            setDrawValues(true)
+                        }
 
-                    val lineData = LineData(dataSet)
-                    lineChart.data = lineData
+                        val lineData = LineData(dataSet)
+                        lineChart.data = lineData
+                        lineChart.notifyDataSetChanged() // Ensure the chart is notified of data changes
 
-                    // Configure X-axis to show date
-                    val xAxis = lineChart.xAxis
-                    xAxis.position = XAxis.XAxisPosition.BOTTOM
-                    xAxis.valueFormatter = object : ValueFormatter() {
-                        override fun getFormattedValue(value: Float): String {
-                            return try {
-                                val date = Date(value.toLong())
-                                val formattedDate = dateFormat.format(date)
-                                Log.d("GoalAdapter", "Formatted Date: $formattedDate")
-                                formattedDate
-                            } catch (e: Exception) {
-                                Log.e("GoalAdapter", "Error formatting date", e)
-                                super.getFormattedValue(value)
+                        // Configure X-axis to show date
+                        val xAxis = lineChart.xAxis
+                        xAxis.position = XAxis.XAxisPosition.BOTTOM
+                        xAxis.valueFormatter = object : ValueFormatter() {
+                            override fun getFormattedValue(value: Float): String {
+                                return try {
+                                    val date = Date(value.toLong())
+                                    dateFormat.format(date)
+                                } catch (e: Exception) {
+                                    Log.e("GoalAdapter", "Error formatting date", e)
+                                    super.getFormattedValue(value)
+                                }
                             }
                         }
+                        xAxis.labelRotationAngle = 45f
+                        xAxis.setDrawGridLines(true)
+                        xAxis.setDrawLabels(true)
+                        xAxis.granularity = (24 * 60 * 60 * 1000).toFloat() // 1 day granularity
+                        xAxis.isGranularityEnabled = true
+
+                        // Set X-axis limits
+                        val minTimestamp = sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
+                        val maxDate = parseDate(latestGoalDetail.timeBound).time
+                        xAxis.axisMinimum = minTimestamp.toFloat()
+                        xAxis.axisMaximum = maxDate.toFloat()
+
+                        // Configure Y-axis to show percentage from 0% to 100%
+                        val yAxis = lineChart.axisLeft
+                        yAxis.axisMinimum = 0f
+                        yAxis.axisMaximum = 100f
+                        yAxis.granularity = 10f // 10% granularity
+                        yAxis.setDrawLabels(true)
+                        yAxis.setDrawGridLines(true)
+
+                        lineChart.axisRight.isEnabled = false
+                        lineChart.description.isEnabled = false
+
+                        val legend = lineChart.legend
+                        legend.isEnabled = true
+                        legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP
+                        legend.horizontalAlignment = Legend.LegendHorizontalAlignment.LEFT
+                        legend.orientation = Legend.LegendOrientation.HORIZONTAL
+                        legend.setDrawInside(true)
+
+                        lineChart.invalidate() // Refresh the chart
+                    } else {
+                        Log.e("GoalAdapter", "No data available for chart")
+                        lineChart.clear() // Clear chart if no data
                     }
-                    xAxis.labelRotationAngle = 45f
-                    xAxis.setDrawGridLines(true)
-                    xAxis.setDrawLabels(true)
-                    xAxis.granularity = 1f
-                    xAxis.isGranularityEnabled = true
-                    xAxis.isEnabled = true
 
-
-                    // Set min and max values for X-axis based on earliest timestamp and timeBound date
-                    val minTimestamp = sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
-                    val maxDate = parseDate(latestGoalDetail.timeBound).time
-                    xAxis.axisMinimum = minTimestamp.toFloat()
-                    xAxis.axisMaximum = maxDate.toFloat()
-                    Log.d("GoalAdapter", "X Axis Min: $minTimestamp, Max: $maxDate")
-
-
-                    // Configure Y-axis to show percentage from 0% to 100%
-                    val yAxis = lineChart.axisLeft
-                    yAxis.axisMinimum = 0f
-                    yAxis.axisMaximum = 100f
-                    yAxis.setDrawLabels(true)
-                    yAxis.setDrawGridLines(true)
-                    yAxis.setDrawAxisLine(true)
-
-                    lineChart.axisRight.isEnabled = false
-                    lineChart.description.isEnabled = false
-
-                    val legend = lineChart.legend
-                    legend.isEnabled = true
-                    legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP
-                    legend.horizontalAlignment = Legend.LegendHorizontalAlignment.LEFT
-                    legend.orientation = Legend.LegendOrientation.HORIZONTAL
-                    legend.setDrawInside(true)
-
-                    lineChart.invalidate() // Refresh the chart
-
+                    // Delete button functionality with confirmation dialog
                     deleteButton.setOnClickListener {
-//                        TODO add alert
-                        viewModel.deleteGoalsBySpecificId(latestGoalDetail.specificId)
+                        AlertDialog.Builder(itemView.context)
+                            .setTitle("Confirm Delete")
+                            .setMessage("Are you sure you want to delete this goal?")
+                            .setPositiveButton("Delete") { _, _ ->
+                                Log.d("GoalAdapter", "Delete button clicked for specificId: ${latestGoalDetail.specificId}")
+                                viewModel.deleteGoalsBySpecificId(latestGoalDetail.specificId)
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
                     }
 
+                    // Edit button functionality
                     editButton.setOnClickListener {
+                        Log.d("GoalAdapter", "Edit button clicked for specificId: ${latestGoalDetail.specificId}")
                         viewModel.showEditDialog(itemView.context, latestGoalDetail)
                     }
 
+                    // Success button functionality with congratulatory dialog
+                    //TODO set this up in achievements 
                     successButton.setOnClickListener {
-//                        TODO create congrats dialog
+                        Log.d("GoalAdapter", "Success button clicked for specificId: ${latestGoalDetail.specificId}")
                         viewModel.updateGoalDetail(
                             specificId = latestGoalDetail.specificId,
                             specificText = latestGoalDetail.specificText,
                             measurable = 100,
                             timeBound = dateFormat.format(Date(System.currentTimeMillis()))
                         )
+
+                        AlertDialog.Builder(itemView.context)
+                            .setTitle("Congratulations!")
+                            .setMessage("You have successfully completed this goal.")
+                            .setPositiveButton("OK", null)
+                            .show()
                     }
                 } else {
                     Log.d("GoalAdapter", "No goal details to bind")
@@ -238,6 +255,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             }
         }
     }
+
 
 
 
