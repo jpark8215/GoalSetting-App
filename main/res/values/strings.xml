@@ -17,4 +17,10 @@
     <string name="very_far">Far - 0%</string>
     <string name="very_close">Close - 100%</string>
 
+    <!-- Empty and Error states -->
+    <string name="no_goals_yet">No Goals Yet</string>
+    <string name="add_first_goal">Add your first goal by clicking the + button</string>
+    <string name="error_occurred">Oops! Something went wrong</string>
+    <string name="try_again_later">Please try again later</string>
+    <string name="retry">Retry</string>
 </resources>

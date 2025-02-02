@@ -6,70 +6,81 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.developerjp.jieungoalsettingapp.data.DBHelper
 import com.developerjp.jieungoalsettingapp.databinding.FragmentAchievementsBinding
-import com.google.android.material.textfield.TextInputEditText
 import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 class AchievementsFragment : Fragment() {
-
     private var _binding: FragmentAchievementsBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
+    private lateinit var achievementsViewModel: AchievementsViewModel
+    private lateinit var adapter: AchievementsViewModel.CompletedGoalsAdapter
 
-    private lateinit var editTextUserInput: TextInputEditText
-    private lateinit var buttonSubmit: Button
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val achievementsViewModel =
-            ViewModelProvider(this).get(AchievementsViewModel::class.java)
+        val dbHelper = DBHelper.getInstance(requireContext())
+        // When creating ViewModel
+        achievementsViewModel = ViewModelProvider(
+            this,
+            AchievementsViewModel.Companion.Factory(dbHelper)
+        )[AchievementsViewModel::class.java]
 
         _binding = FragmentAchievementsBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
-        editTextUserInput = binding.editTextUserInput
-        buttonSubmit = binding.buttonSubmit
+        setupViews()
+        observeViewModel()
 
-        // Set a click listener for the "Submit" button
-        buttonSubmit.setOnClickListener {
-            val userInput = editTextUserInput.text.toString()
-            performGoogleSearch(userInput)
+        return binding.root
+    }
+
+    private fun setupViews() {
+        // Initialize RecyclerView
+        adapter = AchievementsViewModel.CompletedGoalsAdapter(emptyList(), viewModel = achievementsViewModel)
+        binding.recyclerViewAchievements.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = this@AchievementsFragment.adapter
         }
 
-        val textView: TextView = binding.textNotifications
-        achievementsViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+        // Setup submit button
+        binding.buttonSubmit.setOnClickListener {
+            binding.editTextUserInput.text?.toString()?.let { input ->
+                if (input.isNotEmpty()) {
+                    performGoogleSearch(input)
+                } else {
+                    showToast("Please enter a search term")
+                }
+            }
         }
-        return root
+    }
+
+    private fun observeViewModel() {
+        achievementsViewModel.completedGoals.observe(viewLifecycleOwner) { completedGoals ->
+            adapter.updateGoals(completedGoals)
+        }
     }
 
     private fun performGoogleSearch(query: String) {
-        val encodedQuery = URLEncoder.encode(query, "utf-8")
-        val searchUrl = "https://www.google.com/search?q=$encodedQuery"
-
-        // Open the default browser with the search URL
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(searchUrl))
-
         try {
+            val encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString())
+            val searchUrl = "https://www.google.com/search?q=$encodedQuery"
+            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(searchUrl))
             startActivity(browserIntent)
         } catch (e: Exception) {
-            showToast("Failed to open the browser.")
+            showToast("Failed to open the browser")
             e.printStackTrace()
         }
     }
 
     private fun showToast(message: String) {
-        // Show a short toast message
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 

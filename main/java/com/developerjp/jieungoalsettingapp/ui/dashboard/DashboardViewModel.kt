@@ -233,7 +233,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     }
 
                     // Success button functionality with congratulatory dialog
-                    //TODO set this up in achievements 
+                    //TODO set this up in achievements
                     successButton.setOnClickListener {
                         Log.d("GoalAdapter", "Success button clicked for specificId: ${latestGoalDetail.specificId}")
                         viewModel.updateGoalDetail(
@@ -327,4 +327,3 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
     }
 }
-

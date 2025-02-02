@@ -422,4 +422,45 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
+    public List<GoalDetail> getGoalsByMeasurable(int measurable) {
+        List<GoalDetail> goalList = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+
+        try {
+            String query = "SELECT * FROM " + TABLE_GOAL_DETAIL +
+                    " INNER JOIN " + TABLE_GOAL +
+                    " ON " + TABLE_GOAL_DETAIL + "." + GOAL_DETAIL_COLUMN_SPECIFIC_ID +
+                    " = " + TABLE_GOAL + "." + SPECIFIC_COLUMN_ID +
+                    " WHERE " + GOAL_DETAIL_COLUMN_MEASURABLE + " = ?";
+            Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(measurable)});
+
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    int id = cursor.getInt(cursor.getColumnIndex(GOAL_DETAIL_COLUMN_ID));
+                    int specificId = cursor.getInt(cursor.getColumnIndex(GOAL_DETAIL_COLUMN_SPECIFIC_ID));
+                    String timeBound = cursor.getString(cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIME_BOUND));
+                    String timestampStr = cursor.getString(cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIMESTAMP));
+
+                    Date timestamp = null;
+                    try {
+                        timestamp = DATE_FORMAT.parse(timestampStr);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    String specificText = getSpecificText(specificId);
+
+                    GoalDetail goalDetail = new GoalDetail(id, specificId, measurable, timeBound, timestamp, specificText);
+                    goalList.add(goalDetail);
+                }
+                cursor.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.close();
+        }
+
+        return goalList;
+    }
 }

@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="4dp"
+    app:cardElevation="2dp"
     app:cardUseCompatPadding="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -46,7 +46,9 @@
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    tools:text="Specific Text" />
+                    tools:text="Specific Text"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- Target Date TextViews -->
@@ -74,7 +76,8 @@
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    tools:text="Measurable Value" />
+                    tools:text="Measurable Value"
+                    android:textColor="@color/colorAccent" />
             </LinearLayout>
 
             <LinearLayout

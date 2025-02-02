@@ -38,7 +38,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
-        tools:listitem="@layout/item_goal"></androidx.recyclerview.widget.RecyclerView>
+        tools:listitem="@layout/item_goal">
 
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <!-- Add empty state view -->
+    <include
+        android:id="@+id/empty_state"
+        layout="@layout/layout_empty_state"
+        android:visibility="gone"/>
+        
+    <!-- Add error state view -->
+    <include
+        android:id="@+id/error_state"
+        layout="@layout/layout_error_state"
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
