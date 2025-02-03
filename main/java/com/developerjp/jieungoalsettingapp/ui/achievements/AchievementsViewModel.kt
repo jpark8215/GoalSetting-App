@@ -15,22 +15,40 @@ import com.developerjp.jieungoalsettingapp.data.GoalDetail
 
 class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
     private val _completedGoals = MutableLiveData<List<GoalDetail>>()
+    private val _totalGoals = MutableLiveData<Int>()
+    private val _totalCompletedGoals = MutableLiveData<Int>()
+
     val completedGoals: LiveData<List<GoalDetail>> = _completedGoals
+    val totalGoals: LiveData<Int> = _totalGoals
+    val totalCompletedGoals: LiveData<Int> = _totalCompletedGoals
 
     init {
-        fetchCompletedGoals()
+        refreshData()
     }
 
-    private fun fetchCompletedGoals() {
-        // Get all completed goals and group by specificText
-        val allGoals = dbHelper.getGoalsByMeasurable(100)
-        val groupedGoals = allGoals.groupBy { it.specificText }
+    fun refreshData() {
+        fetchGoals()
+    }
+
+    private fun fetchGoals() {
+        val allGoals = dbHelper.allGoalDetailsWithSpecificText
+
+        val groupedAllGoals = allGoals.groupBy { it.specificText }
             .map { (_, goals) ->
-                // For each group, take the most recent completion
                 goals.maxByOrNull { it.timeBound } ?: goals.first()
             }
-        _completedGoals.value = groupedGoals
+        _totalGoals.value = groupedAllGoals.size
+
+        val completedGoals = dbHelper.getGoalsByMeasurable(100)
+        _totalCompletedGoals.value = completedGoals.size
+
+        val groupedCompletedGoals = completedGoals.groupBy { it.specificText }
+            .map { (_, goals) ->
+                goals.maxByOrNull { it.timeBound } ?: goals.first()
+            }
+        _completedGoals.value = groupedCompletedGoals
     }
+
 
     companion object {
         class Factory(private val dbHelper: DBHelper) : ViewModelProvider.Factory {
@@ -56,11 +74,6 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
             fun bind(goal: GoalDetail) {
                 specificTextView.text = goal.specificText
                 timeBoundTextView.text = goal.timeBound
-
-                itemView.setOnClickListener {
-                    // Optional: Handle item click if needed
-                    // viewModel.onGoalClicked(goal)
-                }
             }
         }
 

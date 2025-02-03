@@ -46,8 +46,20 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private val _goalList = MutableLiveData<Map<Int, List<GoalDetail>>>()
     val goalList: LiveData<Map<Int, List<GoalDetail>>> get() = _goalList
 
+    private val _allGoals = MutableLiveData<List<GoalDetail>>()
+    val allGoals: LiveData<List<GoalDetail>> = _allGoals
+
+    private val _filteredGoals = MutableLiveData<List<GoalDetail>>()
+    val filteredGoals: LiveData<List<GoalDetail>> = _filteredGoals
+
     init {
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
+        fetchGoals()
+    }
+
+    fun refreshData() {
+        _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
+        fetchGoals()
     }
 
     // Fetch all goal details from the database
@@ -76,6 +88,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             timestamp
         )
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
+        refreshData()
+
     }
 
 
@@ -83,8 +97,17 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     fun deleteGoalsBySpecificId(specificId: Int) {
         dbHelper.deleteGoalsBySpecificId(specificId)
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
+        refreshData()
     }
 
+    private fun fetchGoals() {
+        _allGoals.value = dbHelper.allGoalDetailsWithSpecificText
+        _filteredGoals.value = _allGoals.value // Initialize filtered goals
+    }
+
+    fun filterGoals(selectedText: String) {
+        _filteredGoals.value = _allGoals.value?.filter { it.specificText == selectedText }
+    }
 
     class GoalAdapter(
         private var groupedGoalDetails: Map<Int, List<GoalDetail>>,
@@ -92,7 +115,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     ) : RecyclerView.Adapter<GoalAdapter.ViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_goal, parent, false)
+            val view =
+                LayoutInflater.from(parent.context).inflate(R.layout.item_goal, parent, false)
             return ViewHolder(view)
         }
 
@@ -145,7 +169,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // Create chart entries using all goal details
                     val entries = sortedGoalDetails.map { goalDetail ->
                         val timestampFloat = goalDetail.timestamp.time.toFloat()
-                        Log.d("GoalAdapter", "Timestamp: ${goalDetail.timestamp}, Float: $timestampFloat, Measurable: ${goalDetail.measurable}")
+                        Log.d(
+                            "GoalAdapter",
+                            "Timestamp: ${goalDetail.timestamp}, Float: $timestampFloat, Measurable: ${goalDetail.measurable}"
+                        )
                         Entry(timestampFloat, goalDetail.measurable.toFloat())
                     }
 
@@ -184,7 +211,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         xAxis.isGranularityEnabled = true
 
                         // Set X-axis limits
-                        val minTimestamp = sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
+                        val minTimestamp =
+                            sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
                         val maxDate = parseDate(latestGoalDetail.timeBound).time
                         xAxis.axisMinimum = minTimestamp.toFloat()
                         xAxis.axisMaximum = maxDate.toFloat()
@@ -213,13 +241,24 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         lineChart.clear() // Clear chart if no data
                     }
 
+                    if (latestGoalDetail.measurable >= 100) {
+                        editButton.visibility = View.INVISIBLE
+                        successButton.visibility = View.INVISIBLE
+                    } else {
+                        editButton.visibility = View.VISIBLE
+                        successButton.visibility = View.VISIBLE
+                    }
+
                     // Delete button functionality with confirmation dialog
                     deleteButton.setOnClickListener {
                         AlertDialog.Builder(itemView.context)
                             .setTitle("Confirm Delete")
                             .setMessage("Are you sure you want to delete this goal?")
                             .setPositiveButton("Delete") { _, _ ->
-                                Log.d("GoalAdapter", "Delete button clicked for specificId: ${latestGoalDetail.specificId}")
+                                Log.d(
+                                    "GoalAdapter",
+                                    "Delete button clicked for specificId: ${latestGoalDetail.specificId}"
+                                )
                                 viewModel.deleteGoalsBySpecificId(latestGoalDetail.specificId)
                             }
                             .setNegativeButton("Cancel", null)
@@ -228,14 +267,19 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                     // Edit button functionality
                     editButton.setOnClickListener {
-                        Log.d("GoalAdapter", "Edit button clicked for specificId: ${latestGoalDetail.specificId}")
+                        Log.d(
+                            "GoalAdapter",
+                            "Edit button clicked for specificId: ${latestGoalDetail.specificId}"
+                        )
                         viewModel.showEditDialog(itemView.context, latestGoalDetail)
                     }
 
                     // Success button functionality with congratulatory dialog
-                    //TODO set this up in achievements
                     successButton.setOnClickListener {
-                        Log.d("GoalAdapter", "Success button clicked for specificId: ${latestGoalDetail.specificId}")
+                        Log.d(
+                            "GoalAdapter",
+                            "Success button clicked for specificId: ${latestGoalDetail.specificId}"
+                        )
                         viewModel.updateGoalDetail(
                             specificId = latestGoalDetail.specificId,
                             specificText = latestGoalDetail.specificText,
@@ -255,8 +299,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             }
         }
     }
-
-
 
 
     fun showEditDialog(context: Context, goalDetail: GoalDetail) {
@@ -325,5 +367,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     ) {
         dbHelper.updateGoalDetail(specificId, specificText, measurable, timeBound)
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
+        refreshData()
     }
 }
