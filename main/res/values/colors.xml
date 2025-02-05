@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="primaryColor">#FF6F00</color> <!-- A vibrant orange -->
+    <color name="backgroundColor">#FFFFFF</color> <!-- White background -->
+    <color name="textPrimary">#212121</color> <!-- Dark grey for primary text -->
+    <color name="textSecondary">#757575</color> <!-- Medium grey for secondary text -->
+    <color name="trackInactive">#BDBDBD</color> <!-- Light grey for inactive slider track -->
+
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginStart="24dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="24dp"
             android:layout_marginEnd="24dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
@@ -34,16 +34,19 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+
             <Spinner
                 android:id="@+id/spinnerGoals"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@null"
+                android:layout_margin="8dp"
                 android:fontFamily="@font/delius_swash_caps"
                 android:importantForAccessibility="yes"
                 android:minHeight="56dp"
                 android:paddingHorizontal="16dp"
-                android:spinnerMode="dropdown" />
+                android:spinnerMode="dropdown"
+                app:endIconMode="dropdown_menu"/>
+
 
         </com.google.android.material.card.MaterialCardView>
 
