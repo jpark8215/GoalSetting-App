@@ -30,6 +30,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:baselineAligned="false"
                 android:orientation="horizontal"
                 android:padding="16dp">
 
@@ -83,14 +84,34 @@
                         android:textSize="16sp" />
                 </LinearLayout>
             </LinearLayout>
+
         </com.google.android.material.card.MaterialCardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/adCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="50dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="50dp"
+            app:layout_constraintBottom_toTopOf="@id/recyclerViewAchievements"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/summaryCard">
+
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/adView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:adSize="BANNER"
+                app:adUnitId="ca-app-pub-2201141547916408/4897584985" />
+        </androidx.cardview.widget.CardView>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewAchievements"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:clipToPadding="false"
             android:paddingBottom="8dp"
@@ -98,8 +119,10 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/summaryCard"
-            tools:listitem="@layout/item_achievement" />
+            app:layout_constraintTop_toBottomOf="@id/adCard"
+            tools:listitem="@layout/item_achievement">
+
+        </androidx.recyclerview.widget.RecyclerView>
 
         <!-- Empty state -->
         <com.google.android.material.card.MaterialCardView

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base application theme -->
-    <style name="Theme.Stride" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.GoalQuest" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Customize your theme here -->
         <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorPrimaryVariant">@color/primaryColor</item>
@@ -11,8 +11,8 @@
     </style>
 
     <!-- AppBar overlay theme -->
-    <style name="Theme.Stride.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+    <style name="Theme.GoalQuest.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
 
     <!-- Popup overlay theme -->
-    <style name="Theme.Stride.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
+    <style name="Theme.GoalQuest.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 </resources>

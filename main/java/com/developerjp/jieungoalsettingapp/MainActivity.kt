@@ -8,7 +8,11 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.developerjp.jieungoalsettingapp.data.DBHelper
 import com.developerjp.jieungoalsettingapp.databinding.ActivityMainBinding
+import com.google.android.gms.ads.MobileAds
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         val appBarConfiguration = AppBarConfiguration(
             setOf(R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_achievements)
+
         )
 
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -35,6 +40,13 @@ class MainActivity : AppCompatActivity() {
         val cursor = db.query("goal_table", null, null, null, null, null, null)
         cursor.close()
 
+        // Initialize the Google Mobile Ads SDK on a background thread
+        val backgroundScope = CoroutineScope(Dispatchers.IO)
+        backgroundScope.launch {
+            // Initialize the Google Mobile Ads SDK on a background thread.
+            MobileAds.initialize(this@MainActivity) {}
+        }
+
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -42,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         if (!navController.popBackStack()) {

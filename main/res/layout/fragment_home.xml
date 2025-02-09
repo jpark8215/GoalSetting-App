@@ -10,53 +10,53 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/Theme.Stride.AppBarOverlay">
+        android:theme="@style/Theme.GoalQuest.AppBarOverlay">
 
-    <com.google.android.material.appbar.CollapsingToolbarLayout
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        app:layout_scrollFlags="scroll|exitUntilCollapsed"
-        app:contentScrim="@color/primaryColor">
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            app:contentScrim="@color/primaryColor"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <!-- Dynamic Header Content -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/appTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="Stride"
-                android:textColor="@android:color/white"
-                android:textSize="36sp"
-                android:textStyle="bold" />
-
-            <TextView
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                android:fontFamily="@font/delius_swash_caps"
-                android:layout_alignParentBottom="true"
-                android:text="Set goals and track the progress!"
-                android:textAlignment="center"
-                android:textColor="@color/trackInactive"
-                android:textSize="20sp" />
+                android:layout_height="match_parent"
+                android:padding="16dp">
 
-            <!--                <ImageView-->
-            <!--                    android:id="@+id/headerImage"-->
-            <!--                    android:layout_width="100dp"-->
-            <!--                    android:layout_height="100dp"-->
-            <!--                    android:layout_below="@id/appTitle"-->
-            <!--                    android:layout_centerHorizontal="true"-->
-            <!--                    android:layout_marginTop="16dp"-->
-            <!--                    android:src="@drawable/goal"-->
-            <!--                    android:contentDescription="Goal Icon" />-->
-        </RelativeLayout>
+                <TextView
+                    android:id="@+id/appTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="@string/app_name"
+                    android:textColor="@android:color/white"
+                    android:textSize="36sp"
+                    android:textStyle="bold" />
 
-    </com.google.android.material.appbar.CollapsingToolbarLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="24dp"
+                    android:fontFamily="@font/delius_swash_caps"
+                    android:text="Set goals and track the progress!"
+                    android:textAlignment="center"
+                    android:textColor="@color/trackInactive"
+                    android:textSize="20sp" />
+
+                <!--                <ImageView-->
+                <!--                    android:id="@+id/headerImage"-->
+                <!--                    android:layout_width="100dp"-->
+                <!--                    android:layout_height="100dp"-->
+                <!--                    android:layout_below="@id/appTitle"-->
+                <!--                    android:layout_centerHorizontal="true"-->
+                <!--                    android:layout_marginTop="16dp"-->
+                <!--                    android:src="@drawable/goal"-->
+                <!--                    android:contentDescription="Goal Icon" />-->
+            </RelativeLayout>
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
 

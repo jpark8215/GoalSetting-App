@@ -165,9 +165,6 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-
-
-
     public List<GoalDetail> getAllGoalDetailsWithSpecificText() {
         SQLiteDatabase db = getReadableDatabase();
         List<GoalDetail> goalDetailList = new ArrayList<>();
@@ -436,10 +433,18 @@ public class DBHelper extends SQLiteOpenHelper {
 
             if (cursor != null) {
                 while (cursor.moveToNext()) {
-                    int id = cursor.getInt(cursor.getColumnIndex(GOAL_DETAIL_COLUMN_ID));
-                    int specificId = cursor.getInt(cursor.getColumnIndex(GOAL_DETAIL_COLUMN_SPECIFIC_ID));
-                    String timeBound = cursor.getString(cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIME_BOUND));
-                    String timestampStr = cursor.getString(cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIMESTAMP));
+                    int idIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_ID);
+                    int id = (idIndex >= 0) ? cursor.getInt(idIndex) : -1; // Use a default value or handle appropriately
+
+                    int specificIdIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_SPECIFIC_ID);
+                    int specificId = (specificIdIndex >= 0) ? cursor.getInt(specificIdIndex) : -1;
+
+                    int timeBoundIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIME_BOUND);
+                    String timeBound = (timeBoundIndex >= 0) ? cursor.getString(timeBoundIndex) : null;
+
+                    int timestampIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIMESTAMP);
+                    String timestampStr = (timestampIndex >= 0) ? cursor.getString(timestampIndex) : null;
+
 
                     Date timestamp = null;
                     try {
