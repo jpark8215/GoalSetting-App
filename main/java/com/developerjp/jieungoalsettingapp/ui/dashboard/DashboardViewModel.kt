@@ -180,7 +180,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         val dataSet = LineDataSet(entries, "%").apply {
                             color = Color.BLUE
                             valueTextColor = Color.BLACK
-                            lineWidth = 2f
+                            lineWidth = 3f
                             setDrawCircles(true)
                             setDrawCircleHole(true)
                             setDrawValues(true)
@@ -233,6 +233,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP
                         legend.horizontalAlignment = Legend.LegendHorizontalAlignment.LEFT
                         legend.orientation = Legend.LegendOrientation.HORIZONTAL
+                        legend.form = Legend.LegendForm.LINE
+                        legend.formSize = 12f
+                        legend.textSize = 14f
+                        legend.textColor = Color.BLACK
                         legend.setDrawInside(true)
 
                         lineChart.invalidate() // Refresh the chart
