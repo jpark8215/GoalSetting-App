@@ -36,7 +36,7 @@
                     android:layout_marginEnd="8dp"
                     android:text="Goal:  "
                     android:textAllCaps="true"
-                    android:textSize="16sp" />
+                    android:textSize="20sp" />
 
                 <TextView
                     android:id="@+id/specific_text"
@@ -45,7 +45,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    android:textSize="16sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
                     tools:text="Specific Text" />
             </LinearLayout>
@@ -102,6 +102,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
+                    android:textColor="@color/colorAccent"
                     android:textSize="16sp"
                     tools:text="Time Bound" />
             </LinearLayout>
