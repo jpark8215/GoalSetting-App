@@ -22,7 +22,7 @@ To get started with GoalQuest, follow these steps:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourusername/goalquest.git
+   git clone https://github.com/jpark8215/goalquest.git
    cd goalquest
    ```
 
