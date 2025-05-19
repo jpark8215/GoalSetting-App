@@ -42,10 +42,10 @@
                 android:layout_margin="8dp"
                 android:fontFamily="@font/delius_swash_caps"
                 android:importantForAccessibility="yes"
-                android:minHeight="56dp"
+                android:minHeight="60dp"
                 android:paddingHorizontal="16dp"
                 android:spinnerMode="dropdown"
-                app:endIconMode="dropdown_menu"/>
+                app:endIconMode="dropdown_menu" />
 
 
         </com.google.android.material.card.MaterialCardView>

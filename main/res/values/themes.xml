@@ -32,9 +32,51 @@
         <item name="colorOutline">@color/md_theme_outline</item>
     </style>
 
+    <!-- Custom dialog style -->
+    <style name="RoundedDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="shapeAppearance">@style/ShapeAppearance.MaterialComponents.MediumComponent</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.Dialog.Rounded</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@color/md_theme_surface</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/MaterialAlertDialog.Title.Text</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/MaterialAlertDialog.Body.Text</item>
+        <item name="buttonBarPositiveButtonStyle">@style/MaterialAlertDialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/MaterialAlertDialog.Button.Negative</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.Dialog.Rounded" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="MaterialAlertDialog.Title.Text" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="MaterialAlertDialog.Body.Text" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="MaterialAlertDialog.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="MaterialAlertDialog.Button.Negative" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">?attr/colorError</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
     <!-- Add text appearance style for collapsing toolbar -->
     <style name="TextAppearance.App.CollapsingToolbar.Expanded" parent="TextAppearance.MaterialComponents.Headline5">
         <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textSize">28sp</item>
     </style>
 </resources>
+

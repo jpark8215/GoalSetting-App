@@ -27,6 +27,7 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.google.android.material.button.MaterialButton
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -64,7 +65,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     // Fetch all goal details from the database
     private fun fetchGoalsFromDatabase(): List<GoalDetail> {
-        return dbHelper.allGoalDetailsWithSpecificText.map { detail ->
+        // Get all goals and group them by specificId
+        val allGoals = dbHelper.allGoalDetailsWithSpecificText
+        val goalsBySpecificId = allGoals.groupBy { it.specificId }
+
+        // Filter out goals where the latest entry is 100%
+        return allGoals.filter { detail ->
+            val latestEntry = goalsBySpecificId[detail.specificId]?.maxByOrNull { it.timestamp }
+            (latestEntry?.measurable ?: 0) < 100
+        }.map { detail ->
             GoalDetail(
                 detail.id,
                 detail.specificId,
@@ -82,16 +91,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         val timestamp = System.currentTimeMillis()
 
         dbHelper.insertGoalDetail(
-            specificId.toInt(),
-            goalDetail.measurable,
-            goalDetail.timeBound,
-            timestamp
+            specificId.toInt(), goalDetail.measurable, goalDetail.timeBound, timestamp
         )
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
         refreshData()
-
     }
-
 
     // Delete goals by specific ID
     fun deleteGoalsBySpecificId(specificId: Int) {
@@ -101,8 +105,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun fetchGoals() {
-        _allGoals.value = dbHelper.allGoalDetailsWithSpecificText
-        _filteredGoals.value = _allGoals.value // Initialize filtered goals
+        val allGoals = dbHelper.allGoalDetailsWithSpecificText
+        val goalsBySpecificId = allGoals.groupBy { it.specificId }
+
+        // Filter out goals where the latest entry is 100%
+        _allGoals.value = allGoals.filter { detail ->
+            val latestEntry = goalsBySpecificId[detail.specificId]?.maxByOrNull { it.timestamp }
+            (latestEntry?.measurable ?: 0) < 100
+        }
+        _filteredGoals.value = _allGoals.value
     }
 
     fun filterGoals(selectedText: String) {
@@ -144,11 +155,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             private val editButton: Button = itemView.findViewById(R.id.button_edit)
             private val successButton: Button = itemView.findViewById(R.id.button_success)
 
-            private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            private val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+            private val dbDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
             private fun parseDate(dateString: String?): Date {
                 return try {
-                    dateString?.let { dateFormat.parse(it) } ?: Date()
+                    dateString?.let { dbDateFormat.parse(it) } ?: Date()
                 } catch (e: ParseException) {
                     Date()
                 }
@@ -164,7 +176,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                     specificTextView.text = latestGoalDetail.specificText
                     measurableTextView.text = "${latestGoalDetail.measurable}%"
-                    timeBoundTextView.text = latestGoalDetail.timeBound
+                    timeBoundTextView.text =
+                        dateFormat.format(parseDate(latestGoalDetail.timeBound))
 
                     // Create chart entries using all goal details
                     val entries = sortedGoalDetails.map { goalDetail ->
@@ -188,7 +201,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                         val lineData = LineData(dataSet)
                         lineChart.data = lineData
-                        lineChart.notifyDataSetChanged() // Ensure the chart is notified of data changes
+                        lineChart.notifyDataSetChanged()
 
                         // Configure X-axis to show date
                         val xAxis = lineChart.xAxis
@@ -239,23 +252,26 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         legend.textColor = Color.BLACK
                         legend.setDrawInside(true)
 
-                        lineChart.invalidate() // Refresh the chart
+                        lineChart.invalidate()
                     } else {
                         Log.e("GoalAdapter", "No data available for chart")
-                        lineChart.clear() // Clear chart if no data
+                        lineChart.clear()
                     }
 
+                    // Hide edit and success buttons if goal is completed
                     if (latestGoalDetail.measurable >= 100) {
-                        editButton.visibility = View.INVISIBLE
-                        successButton.visibility = View.INVISIBLE
+                        editButton.visibility = View.GONE
+                        successButton.visibility = View.GONE
+                        deleteButton.visibility = View.GONE
                     } else {
                         editButton.visibility = View.VISIBLE
                         successButton.visibility = View.VISIBLE
+                        deleteButton.visibility = View.VISIBLE
                     }
 
                     // Delete button functionality with confirmation dialog
                     deleteButton.setOnClickListener {
-                        AlertDialog.Builder(itemView.context)
+                        AlertDialog.Builder(itemView.context, R.style.RoundedDialog)
                             .setTitle("Confirm Delete")
                             .setMessage("Are you sure you want to delete this goal?")
                             .setPositiveButton("Delete") { _, _ ->
@@ -264,9 +280,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                                     "Delete button clicked for specificId: ${latestGoalDetail.specificId}"
                                 )
                                 viewModel.deleteGoalsBySpecificId(latestGoalDetail.specificId)
-                            }
-                            .setNegativeButton("Cancel", null)
-                            .show()
+                            }.setNegativeButton("Cancel", null).show()
                     }
 
                     // Edit button functionality
@@ -291,11 +305,19 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                             timeBound = dateFormat.format(Date(System.currentTimeMillis()))
                         )
 
-                        AlertDialog.Builder(itemView.context)
-                            .setTitle("Congratulations!")
-                            .setMessage("You have successfully completed this goal.")
-                            .setPositiveButton("OK", null)
-                            .show()
+                        // Show animated congratulatory dialog
+                        val dialogView = LayoutInflater.from(itemView.context)
+                            .inflate(R.layout.dialog_congratulations, null)
+                        val dialog = AlertDialog.Builder(itemView.context, R.style.RoundedDialog)
+                            .setView(dialogView).setCancelable(false).create()
+
+                        dialogView.findViewById<MaterialButton>(R.id.button_ok).setOnClickListener {
+                            dialog.dismiss()
+                            // Refresh the dashboard to remove the completed goal
+                            viewModel.refreshData()
+                        }
+
+                        dialog.show()
                     }
                 } else {
                     Log.d("GoalAdapter", "No goal details to bind")
@@ -335,14 +357,11 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         cal.time = date ?: Date()
 
         editTimeBoundDatePicker.updateDate(
-            cal.get(Calendar.YEAR),
-            cal.get(Calendar.MONTH),
-            cal.get(Calendar.DAY_OF_MONTH)
+            cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)
         )
 
-        val dialog = AlertDialog.Builder(context)
-            .setView(dialogView)
-            .create()
+        val dialog =
+            AlertDialog.Builder(context, R.style.RoundedDialog).setView(dialogView).create()
 
         buttonSave.setOnClickListener {
             val specificText = editSpecificText.text.toString()
@@ -364,10 +383,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun updateGoalDetail(
-        specificId: Int,
-        specificText: String,
-        measurable: Int,
-        timeBound: String
+        specificId: Int, specificText: String, measurable: Int, timeBound: String
     ) {
         dbHelper.updateGoalDetail(specificId, specificText, measurable, timeBound)
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }

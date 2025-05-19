@@ -40,7 +40,8 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        dbHelper = DBHelper.getInstance(requireContext()) // Initialize DBHelper using getInstance method
+        dbHelper =
+            DBHelper.getInstance(requireContext()) // Initialize DBHelper using getInstance method
 
         // Inflate the layout for this fragment using view binding
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -81,14 +82,17 @@ class HomeFragment : Fragment() {
                 // Retrieve the input values from EditText fields
                 val specific = binding.specific.text?.toString()
                 val measurable = measurableSeekBar.progress.toString()
-                val timeBound = timeBoundButton.text?.toString()
+                val timeBound = timeBoundButton.tag?.toString() ?: timeBoundButton.text?.toString()
 
                 // Check if all values are not null before creating a new Goal instance
-                if (specific?.isNotEmpty() == true && measurable.isNotEmpty() && timeBound?.isNotEmpty() == true && timeBound != getString(R.string.select_date)) {
-                    if (dbHelper.isSpecificExists(specific) ){
-                        AlertDialog.Builder(context)
+                if (specific?.isNotEmpty() == true && measurable.isNotEmpty() && timeBound?.isNotEmpty() == true && timeBound != getString(
+                        R.string.select_date
+                    )
+                ) {
+                    if (dbHelper.isSpecificExists(specific)) {
+                        AlertDialog.Builder(context, R.style.RoundedDialog)
                             .setTitle("Duplicate Goal")
-                            .setMessage("A goal with this title already exists. Please choose a different title.")
+                            .setMessage("A goal with this title already exists!\nPlease choose a different title.")
                             .setPositiveButton("OK", null)
                             .show()
 
@@ -138,8 +142,13 @@ class HomeFragment : Fragment() {
         val datePickerDialog = DatePickerDialog(
             requireContext(),
             { _: DatePicker, selectedYear: Int, selectedMonth: Int, selectedDay: Int ->
-                val formattedDate = String.format("%d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
-                timeBoundButton.text = formattedDate
+                // Format for display
+                val displayFormat = String.format("%02d/%02d/%d", selectedMonth + 1, selectedDay, selectedYear)
+                // Format for database storage
+                val dbFormat = String.format("%d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
+                timeBoundButton.text = displayFormat
+                // Store the database format in a tag for later use
+                timeBoundButton.tag = dbFormat
             },
             year, month, day
         )

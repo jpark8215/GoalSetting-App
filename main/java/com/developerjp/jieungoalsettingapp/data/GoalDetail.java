@@ -1,7 +1,5 @@
 package com.developerjp.jieungoalsettingapp.data;
 
-import androidx.annotation.Nullable;
-
 import java.util.Date;
 
 public class GoalDetail {

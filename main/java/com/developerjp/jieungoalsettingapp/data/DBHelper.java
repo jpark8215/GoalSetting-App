@@ -19,24 +19,20 @@ import java.util.Locale;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "goals.db";
-    private static final int DATABASE_VERSION = 1;
-
     // Table names
     public static final String TABLE_GOAL = "goal_table";
     public static final String TABLE_GOAL_DETAIL = "goal_detail_table";
-
     // Columns of goal_table
     public static final String SPECIFIC_COLUMN_ID = "id";
     public static final String SPECIFIC_COLUMN_TEXT = "specific_text";
-
     // Columns of goal_detail_table
     public static final String GOAL_DETAIL_COLUMN_ID = "id";
     public static final String GOAL_DETAIL_COLUMN_SPECIFIC_ID = "specific_id";
     public static final String GOAL_DETAIL_COLUMN_MEASURABLE = "measurable";
     public static final String GOAL_DETAIL_COLUMN_TIME_BOUND = "time_bound";
     public static final String GOAL_DETAIL_COLUMN_TIMESTAMP = "timestamp";
-
+    private static final String DATABASE_NAME = "goals.db";
+    private static final int DATABASE_VERSION = 1;
     // Date format for storing/retrieving datetime in SQLite
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
 
@@ -248,7 +244,8 @@ public class DBHelper extends SQLiteOpenHelper {
         String selection = SPECIFIC_COLUMN_ID + " = ?";
         String[] selectionArgs = {String.valueOf(specificId)};
 
-        Cursor cursor = db.query(
+        // Check if the cursor contains any rows
+        try (Cursor cursor = db.query(
                 TABLE_GOAL,
                 columns,
                 selection,
@@ -256,23 +253,16 @@ public class DBHelper extends SQLiteOpenHelper {
                 null,
                 null,
                 null
-        );
-
-        // Check if the cursor contains any rows
-        if (cursor != null) {
-            try {
-                if (cursor.moveToFirst()) {
-                    // Retrieve specific text
-                    int columnIndex = cursor.getColumnIndex(SPECIFIC_COLUMN_TEXT);
-                    if (columnIndex != -1) {
-                        specificText = cursor.getString(columnIndex);
-                    } else {
-                        // Handle the case where the column index is missing
-                        Log.e("DBHelper", "Column '" + SPECIFIC_COLUMN_TEXT + "' not found in the database.");
-                    }
+        )) {
+            if (cursor.moveToFirst()) {
+                // Retrieve specific text
+                int columnIndex = cursor.getColumnIndex(SPECIFIC_COLUMN_TEXT);
+                if (columnIndex != -1) {
+                    specificText = cursor.getString(columnIndex);
+                } else {
+                    // Handle the case where the column index is missing
+                    Log.e("DBHelper", "Column '" + SPECIFIC_COLUMN_TEXT + "' not found in the database.");
                 }
-            } finally {
-                cursor.close();
             }
         }
 
@@ -297,7 +287,7 @@ public class DBHelper extends SQLiteOpenHelper {
         String selection = GOAL_DETAIL_COLUMN_SPECIFIC_ID + " = ?";
         String[] selectionArgs = {String.valueOf(specificId)};
 
-        Cursor cursor = db.query(
+        try (Cursor cursor = db.query(
                 TABLE_GOAL_DETAIL,
                 projection,
                 selection,
@@ -305,43 +295,37 @@ public class DBHelper extends SQLiteOpenHelper {
                 null,
                 null,
                 null
-        );
+        )) {
+            if (cursor.moveToFirst()) {
+                int idIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_ID);
+                int measurableIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_MEASURABLE);
+                int timeBoundIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIME_BOUND);
+                int timestampIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIMESTAMP);
 
-        if (cursor != null) {
-            try {
-                if (cursor.moveToFirst()) {
-                    int idIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_ID);
-                    int measurableIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_MEASURABLE);
-                    int timeBoundIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIME_BOUND);
-                    int timestampIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIMESTAMP);
-
-                    // Check if indices are valid
-                    if (idIndex == -1 || measurableIndex == -1 || timeBoundIndex == -1 || timestampIndex == -1) {
-                        // Handle the case where one or more indices are missing
-                        return null; // or throw an exception, log an error, etc.
-                    }
-
-                    // Retrieve values
-                    int id = cursor.getInt(idIndex);
-                    int measurable = cursor.getInt(measurableIndex);
-                    String timeBound = cursor.getString(timeBoundIndex);
-                    String timestampStr = cursor.getString(timestampIndex);
-
-                    Date timestamp = null;
-                    try {
-                        timestamp = DATE_FORMAT.parse(timestampStr);
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-
-                    // Fetch specific text using DBHelper
-                    String specificText = getSpecificText(specificId);
-
-                    // Create GoalDetail object
-                    goalDetail = new GoalDetail(id, specificId, measurable, timeBound, timestamp, specificText);
+                // Check if indices are valid
+                if (idIndex == -1 || measurableIndex == -1 || timeBoundIndex == -1 || timestampIndex == -1) {
+                    // Handle the case where one or more indices are missing
+                    return null; // or throw an exception, log an error, etc.
                 }
-            } finally {
-                cursor.close();
+
+                // Retrieve values
+                int id = cursor.getInt(idIndex);
+                int measurable = cursor.getInt(measurableIndex);
+                String timeBound = cursor.getString(timeBoundIndex);
+                String timestampStr = cursor.getString(timestampIndex);
+
+                Date timestamp = null;
+                try {
+                    timestamp = DATE_FORMAT.parse(timestampStr);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                // Fetch specific text using DBHelper
+                String specificText = getSpecificText(specificId);
+
+                // Create GoalDetail object
+                goalDetail = new GoalDetail(id, specificId, measurable, timeBound, timestamp, specificText);
             }
         }
 
@@ -378,13 +362,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public void updateGoalDetail(int specificId, @NotNull String specificText, int measurable, @NotNull String timeBound) {
-        SQLiteDatabase db = this.getWritableDatabase();
 
-        try {
+        try (SQLiteDatabase db = this.getWritableDatabase()) {
             // Check if specificId already exists in goal_table
-            String[] specificProjection = { SPECIFIC_COLUMN_ID };
+            String[] specificProjection = {SPECIFIC_COLUMN_ID};
             String specificSelection = SPECIFIC_COLUMN_ID + " = ?";
-            String[] specificSelectionArgs = { String.valueOf(specificId) };
+            String[] specificSelectionArgs = {String.valueOf(specificId)};
 
             Cursor cursor = db.query(TABLE_GOAL, specificProjection, specificSelection, specificSelectionArgs, null, null, null);
             if (cursor.moveToFirst()) {
@@ -414,16 +397,13 @@ public class DBHelper extends SQLiteOpenHelper {
 
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            db.close();
         }
     }
 
     public List<GoalDetail> getGoalsByMeasurable(int measurable) {
         List<GoalDetail> goalList = new ArrayList<>();
-        SQLiteDatabase db = getReadableDatabase();
 
-        try {
+        try (SQLiteDatabase db = getReadableDatabase()) {
             String query = "SELECT * FROM " + TABLE_GOAL_DETAIL +
                     " INNER JOIN " + TABLE_GOAL +
                     " ON " + TABLE_GOAL_DETAIL + "." + GOAL_DETAIL_COLUMN_SPECIFIC_ID +
@@ -431,39 +411,36 @@ public class DBHelper extends SQLiteOpenHelper {
                     " WHERE " + GOAL_DETAIL_COLUMN_MEASURABLE + " = ?";
             Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(measurable)});
 
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
-                    int idIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_ID);
-                    int id = (idIndex >= 0) ? cursor.getInt(idIndex) : -1; // Use a default value or handle appropriately
+            while (cursor.moveToNext()) {
+                int idIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_ID);
+                int id = (idIndex >= 0) ? cursor.getInt(idIndex) : -1; // Use a default value or handle appropriately
 
-                    int specificIdIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_SPECIFIC_ID);
-                    int specificId = (specificIdIndex >= 0) ? cursor.getInt(specificIdIndex) : -1;
+                int specificIdIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_SPECIFIC_ID);
+                int specificId = (specificIdIndex >= 0) ? cursor.getInt(specificIdIndex) : -1;
 
-                    int timeBoundIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIME_BOUND);
-                    String timeBound = (timeBoundIndex >= 0) ? cursor.getString(timeBoundIndex) : null;
+                int timeBoundIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIME_BOUND);
+                String timeBound = (timeBoundIndex >= 0) ? cursor.getString(timeBoundIndex) : null;
 
-                    int timestampIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIMESTAMP);
-                    String timestampStr = (timestampIndex >= 0) ? cursor.getString(timestampIndex) : null;
+                int timestampIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIMESTAMP);
+                String timestampStr = (timestampIndex >= 0) ? cursor.getString(timestampIndex) : null;
 
 
-                    Date timestamp = null;
-                    try {
-                        timestamp = DATE_FORMAT.parse(timestampStr);
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-
-                    String specificText = getSpecificText(specificId);
-
-                    GoalDetail goalDetail = new GoalDetail(id, specificId, measurable, timeBound, timestamp, specificText);
-                    goalList.add(goalDetail);
+                Date timestamp = null;
+                try {
+                    assert timestampStr != null;
+                    timestamp = DATE_FORMAT.parse(timestampStr);
+                } catch (ParseException e) {
+                    e.printStackTrace();
                 }
-                cursor.close();
+
+                String specificText = getSpecificText(specificId);
+
+                GoalDetail goalDetail = new GoalDetail(id, specificId, measurable, timeBound, timestamp, specificText);
+                goalList.add(goalDetail);
             }
+            cursor.close();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            db.close();
         }
 
         return goalList;

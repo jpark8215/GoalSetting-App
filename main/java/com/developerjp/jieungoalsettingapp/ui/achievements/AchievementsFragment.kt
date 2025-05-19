@@ -31,7 +31,7 @@ class AchievementsFragment : Fragment() {
         )[AchievementsViewModel::class.java]
 
         _binding = FragmentAchievementsBinding.inflate(inflater, container, false)
-        
+
         // Initialize and load the ad
         adView = binding.adView
         val adRequest = AdRequest.Builder().build()

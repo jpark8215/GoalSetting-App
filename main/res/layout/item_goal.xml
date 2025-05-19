@@ -30,21 +30,23 @@
 
                 <TextView
                     android:id="@+id/specific_text_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="Goal:  "
+                    android:layout_weight="2"
+                    android:text="Goal:"
                     android:textAllCaps="true"
                     android:textSize="20sp" />
 
                 <TextView
                     android:id="@+id/specific_text"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
+                    android:textAllCaps="true"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     tools:text="Specific Text" />
@@ -60,17 +62,18 @@
 
                 <TextView
                     android:id="@+id/measurable_text_label"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="Progress:  "
+                    android:layout_weight="2"
+                    android:text="Progress:"
                     android:textAllCaps="true"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/measurable_text"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
@@ -87,17 +90,18 @@
 
                 <TextView
                     android:id="@+id/time_bound_text_label"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="Target Date:  "
+                    android:layout_weight="2"
+                    android:text="Target Date:"
                     android:textAllCaps="true"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/time_bound_text"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
@@ -121,7 +125,7 @@
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/line_chart"
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
+                android:layout_height="300dp"
                 android:layout_marginTop="25dp"
                 android:layout_marginBottom="25dp"
                 android:importantForAccessibility="yes"

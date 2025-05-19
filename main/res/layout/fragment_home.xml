@@ -122,13 +122,13 @@
 
                     <SeekBar
                         android:id="@+id/measurable"
-                        style="@style/Widget.AppCompat.SeekBar"
+                        style="@android:style/Widget.SeekBar"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
+                        android:layout_height="wrap_content"
                         android:max="100"
                         android:progress="20"
-                        android:thumbTint="@color/material_dynamic_primary40"
-                        android:progressTint="@color/material_dynamic_primary40" />
+                        android:progressTint="@color/material_dynamic_primary40"
+                        android:thumbTint="@color/material_dynamic_primary40" />
 
                     <TextView
                         android:id="@+id/seekBarValue"
