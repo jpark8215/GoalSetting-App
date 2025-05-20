@@ -40,7 +40,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textAllCaps="true"
+                    android:textAllCaps="false"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     tools:text="Specific Text" />
