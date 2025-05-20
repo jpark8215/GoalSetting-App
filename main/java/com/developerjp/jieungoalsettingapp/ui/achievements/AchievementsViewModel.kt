@@ -44,21 +44,21 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
 
     private fun fetchGoals() {
         val allGoals = dbHelper.allGoalDetailsWithSpecificText
+        val goalsBySpecificId = allGoals.groupBy { it.specificId }
 
-        val groupedAllGoals = allGoals.groupBy { it.specificText }
-            .map { (_, goals) ->
-                goals.maxByOrNull { it.timeBound } ?: goals.first()
-            }
-        _totalGoals.value = groupedAllGoals.size
+        // Get the latest entry for each specific ID
+        val latestEntries = goalsBySpecificId.mapValues { (_, goals) ->
+            goals.maxByOrNull { it.timestamp }
+        }
 
-        val completedGoals = dbHelper.getGoalsByMeasurable(100)
+        // Filter goals where the latest entry is 100% and remove nulls
+        val completedGoals = latestEntries.values
+            .filterNotNull()
+            .filter { it.measurable == 100 }
+
+        _completedGoals.value = completedGoals
+        _totalGoals.value = goalsBySpecificId.size
         _totalCompletedGoals.value = completedGoals.size
-
-        val groupedCompletedGoals = completedGoals.groupBy { it.specificText }
-            .map { (_, goals) ->
-                goals.maxByOrNull { it.timeBound } ?: goals.first()
-            }
-        _completedGoals.value = groupedCompletedGoals
     }
 
     fun showEditDialog(context: Context, goalDetail: GoalDetail) {

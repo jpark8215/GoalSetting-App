@@ -35,6 +35,11 @@ class DashboardFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        dashboardViewModel.refreshData()
+    }
+
     private fun setupRecyclerView() {
         adapter = DashboardViewModel.GoalAdapter(emptyMap(), dashboardViewModel)
         binding.recyclerViewGoals.apply {

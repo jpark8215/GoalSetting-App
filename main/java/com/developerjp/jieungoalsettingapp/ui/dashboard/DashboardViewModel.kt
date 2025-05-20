@@ -197,6 +197,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                             setDrawCircles(true)
                             setDrawCircleHole(true)
                             setDrawValues(true)
+                            mode = LineDataSet.Mode.LINEAR
+                            setDrawFilled(false)
                         }
 
                         val lineData = LineData(dataSet)
@@ -224,8 +226,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         xAxis.isGranularityEnabled = true
 
                         // Set X-axis limits
-                        val minTimestamp =
-                            sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
+                        val minTimestamp = sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
                         val maxDate = parseDate(latestGoalDetail.timeBound).time
                         xAxis.axisMinimum = minTimestamp.toFloat()
                         xAxis.axisMaximum = maxDate.toFloat()
@@ -240,6 +241,12 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                         lineChart.axisRight.isEnabled = false
                         lineChart.description.isEnabled = false
+                        lineChart.setDrawGridBackground(false)
+                        lineChart.setDrawBorders(false)
+                        lineChart.setScaleEnabled(true)
+                        lineChart.setPinchZoom(false)
+                        lineChart.setTouchEnabled(true)
+                        lineChart.setDragEnabled(true)
 
                         val legend = lineChart.legend
                         legend.isEnabled = true
@@ -252,10 +259,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         legend.textColor = Color.BLACK
                         legend.setDrawInside(true)
 
+                        // Ensure the chart is properly initialized
+                        lineChart.setVisibleXRange(1f, 7f) // Show 7 days at a time
+                        lineChart.moveViewToX(entries.last().x) // Move to the latest entry
                         lineChart.invalidate()
                     } else {
                         Log.e("GoalAdapter", "No data available for chart")
                         lineChart.clear()
+                        lineChart.invalidate()
                     }
 
                     // Hide edit and success buttons if goal is completed
@@ -382,9 +393,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         dialog.show()
     }
 
-    private fun updateGoalDetail(
-        specificId: Int, specificText: String, measurable: Int, timeBound: String
-    ) {
+    fun updateGoalDetail(specificId: Int, specificText: String, measurable: Int, timeBound: String) {
         dbHelper.updateGoalDetail(specificId, specificText, measurable, timeBound)
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
         refreshData()

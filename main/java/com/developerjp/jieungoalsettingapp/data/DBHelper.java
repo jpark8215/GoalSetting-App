@@ -35,6 +35,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     // Date format for storing/retrieving datetime in SQLite
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+    private static final SimpleDateFormat DATE_ONLY_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
     // SQL statement to create goal_table
     private static final String SQL_CREATE_SPECIFIC_TABLE =
@@ -126,7 +127,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         try {
             ContentValues values = new ContentValues();
-            values.put(SPECIFIC_COLUMN_TEXT, specificText);
+            values.put(SPECIFIC_COLUMN_TEXT, specificText.toUpperCase());
 
             specificId = db.insert(TABLE_GOAL, null, values);
         } catch (Exception e) {
@@ -139,6 +140,31 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
+    // Helper method to format date string to yyyy-MM-dd
+    private String formatDateString(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return DATE_ONLY_FORMAT.format(new Date());
+        }
+        try {
+            // Try parsing with different formats
+            Date date = null;
+            try {
+                date = DATE_ONLY_FORMAT.parse(dateStr);
+            } catch (ParseException e) {
+                try {
+                    SimpleDateFormat displayFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
+                    date = displayFormat.parse(dateStr);
+                } catch (ParseException e2) {
+                    // If all parsing fails, return today's date
+                    return DATE_ONLY_FORMAT.format(new Date());
+                }
+            }
+            return DATE_ONLY_FORMAT.format(date);
+        } catch (Exception e) {
+            return DATE_ONLY_FORMAT.format(new Date());
+        }
+    }
+
     public long insertGoalDetail(int specificId, int measurable, String timeBound, long timestamp) {
         SQLiteDatabase db = getWritableDatabase();
         long goalDetailId = -1;
@@ -147,7 +173,7 @@ public class DBHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put(GOAL_DETAIL_COLUMN_SPECIFIC_ID, specificId);
             values.put(GOAL_DETAIL_COLUMN_MEASURABLE, measurable);
-            values.put(GOAL_DETAIL_COLUMN_TIME_BOUND, timeBound);
+            values.put(GOAL_DETAIL_COLUMN_TIME_BOUND, formatDateString(timeBound));
             values.put(GOAL_DETAIL_COLUMN_TIMESTAMP, DATE_FORMAT.format(new Date(timestamp)));
 
             goalDetailId = db.insert(TABLE_GOAL_DETAIL, null, values);
@@ -373,14 +399,14 @@ public class DBHelper extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 // specificId exists, update the specificText
                 ContentValues specificValues = new ContentValues();
-                specificValues.put(SPECIFIC_COLUMN_TEXT, specificText);
+                specificValues.put(SPECIFIC_COLUMN_TEXT, specificText.toUpperCase());
 
                 db.update(TABLE_GOAL, specificValues, specificSelection, specificSelectionArgs);
             } else {
                 // specificId does not exist, insert it
                 ContentValues specificValues = new ContentValues();
                 specificValues.put(SPECIFIC_COLUMN_ID, specificId);
-                specificValues.put(SPECIFIC_COLUMN_TEXT, specificText);
+                specificValues.put(SPECIFIC_COLUMN_TEXT, specificText.toUpperCase());
 
                 db.insert(TABLE_GOAL, null, specificValues);
             }
@@ -390,7 +416,7 @@ public class DBHelper extends SQLiteOpenHelper {
             ContentValues goalDetailValues = new ContentValues();
             goalDetailValues.put(GOAL_DETAIL_COLUMN_SPECIFIC_ID, specificId);
             goalDetailValues.put(GOAL_DETAIL_COLUMN_MEASURABLE, measurable);
-            goalDetailValues.put(GOAL_DETAIL_COLUMN_TIME_BOUND, timeBound);
+            goalDetailValues.put(GOAL_DETAIL_COLUMN_TIME_BOUND, formatDateString(timeBound));
             goalDetailValues.put(GOAL_DETAIL_COLUMN_TIMESTAMP, DATE_FORMAT.format(new Date())); // Current timestamp
 
             db.insert(TABLE_GOAL_DETAIL, null, goalDetailValues);
