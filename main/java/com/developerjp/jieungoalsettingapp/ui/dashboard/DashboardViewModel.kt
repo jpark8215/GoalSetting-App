@@ -21,7 +21,6 @@ import com.developerjp.jieungoalsettingapp.R
 import com.developerjp.jieungoalsettingapp.data.DBHelper
 import com.developerjp.jieungoalsettingapp.data.GoalDetail
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -193,76 +192,119 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         val dataSet = LineDataSet(entries, "%").apply {
                             color = Color.BLUE
                             valueTextColor = Color.BLACK
-                            lineWidth = 3f
+                            lineWidth = 2f
                             setDrawCircles(true)
                             setDrawCircleHole(true)
                             setDrawValues(true)
                             mode = LineDataSet.Mode.LINEAR
                             setDrawFilled(false)
+                            circleRadius = 6f
+                            circleHoleRadius = 3f
                         }
 
                         val lineData = LineData(dataSet)
                         lineChart.data = lineData
-                        lineChart.notifyDataSetChanged()
 
-                        // Configure X-axis to show date
-                        val xAxis = lineChart.xAxis
-                        xAxis.position = XAxis.XAxisPosition.BOTTOM
-                        xAxis.valueFormatter = object : ValueFormatter() {
-                            override fun getFormattedValue(value: Float): String {
-                                return try {
-                                    val date = Date(value.toLong())
-                                    dateFormat.format(date)
-                                } catch (e: Exception) {
-                                    Log.e("GoalAdapter", "Error formatting date", e)
-                                    super.getFormattedValue(value)
-                                }
-                            }
-                        }
-                        xAxis.labelRotationAngle = 45f
-                        xAxis.setDrawGridLines(true)
-                        xAxis.setDrawLabels(true)
-                        xAxis.granularity = (24 * 60 * 60 * 1000).toFloat() // 1 day granularity
-                        xAxis.isGranularityEnabled = true
-
-                        // Set X-axis limits
-                        val minTimestamp = sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
-                        val maxDate = parseDate(latestGoalDetail.timeBound).time
-                        xAxis.axisMinimum = minTimestamp.toFloat()
-                        xAxis.axisMaximum = maxDate.toFloat()
-
-                        // Configure Y-axis to show percentage from 0% to 100%
-                        val yAxis = lineChart.axisLeft
-                        yAxis.axisMinimum = 0f
-                        yAxis.axisMaximum = 100f
-                        yAxis.granularity = 10f // 10% granularity
-                        yAxis.setDrawLabels(true)
-                        yAxis.setDrawGridLines(true)
-
-                        lineChart.axisRight.isEnabled = false
+                        // Basic chart setup
                         lineChart.description.isEnabled = false
+                        lineChart.legend.isEnabled = false
                         lineChart.setDrawGridBackground(false)
                         lineChart.setDrawBorders(false)
                         lineChart.setScaleEnabled(true)
-                        lineChart.setPinchZoom(false)
+                        lineChart.setPinchZoom(true)
                         lineChart.setTouchEnabled(true)
                         lineChart.setDragEnabled(true)
 
-                        val legend = lineChart.legend
-                        legend.isEnabled = true
-                        legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP
-                        legend.horizontalAlignment = Legend.LegendHorizontalAlignment.LEFT
-                        legend.orientation = Legend.LegendOrientation.HORIZONTAL
-                        legend.form = Legend.LegendForm.LINE
-                        legend.formSize = 12f
-                        legend.textSize = 14f
-                        legend.textColor = Color.BLACK
-                        legend.setDrawInside(true)
+                        // Calculate date range
+                        val minTimestamp = sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
+                        val maxDate = parseDate(latestGoalDetail.timeBound).time
+                        
+                        Log.d("GoalAdapter", "Raw timestamps - Min: $minTimestamp, Max: $maxDate")
+                        Log.d("GoalAdapter", "Formatted dates - Min: ${Date(minTimestamp)}, Max: ${Date(maxDate)}")
 
-                        // Ensure the chart is properly initialized
-                        lineChart.setVisibleXRange(1f, 7f) // Show 7 days at a time
-                        lineChart.moveViewToX(entries.last().x) // Move to the latest entry
+                        // Configure X-axis
+                        val xAxis = lineChart.xAxis
+                        xAxis.position = XAxis.XAxisPosition.BOTTOM
+                        xAxis.setDrawGridLines(true)
+                        xAxis.setDrawAxisLine(true)
+                        xAxis.setDrawLabels(true)
+                        xAxis.textSize = 12f
+                        xAxis.textColor = Color.BLACK
+                        xAxis.labelRotationAngle = 45f
+                        
+                        // Calculate number of days and set label count
+                        val daysBetween = ((maxDate - minTimestamp) / (24 * 60 * 60 * 1000)).toInt()
+                        val labelCount = minOf(daysBetween + 1, 7) // Show at most 7 labels
+                        xAxis.setLabelCount(labelCount, true)
+                        
+                        // Set X-axis limits
+                        xAxis.axisMinimum = 0f
+                        xAxis.axisMaximum = daysBetween.toFloat()
+                        
+                        Log.d("GoalAdapter", "Days between: $daysBetween, Label count: $labelCount")
+                        
+                        // Set X-axis formatter with explicit date calculation
+                        xAxis.valueFormatter = object : ValueFormatter() {
+                            override fun getFormattedValue(value: Float): String {
+                                return try {
+                                    val dayOffset = value.toInt()
+                                    val calendar = Calendar.getInstance()
+                                    calendar.time = Date(minTimestamp)
+                                    calendar.add(Calendar.DAY_OF_MONTH, dayOffset)
+                                    
+                                    val day = calendar.get(Calendar.DAY_OF_MONTH)
+                                    val month = calendar.get(Calendar.MONTH) + 1
+                                    val formattedDate = "$month/$day"
+                                    Log.d("GoalAdapter", "Formatting day offset: $dayOffset -> $formattedDate")
+                                    formattedDate
+                                } catch (e: Exception) {
+                                    Log.e("GoalAdapter", "Error formatting date", e)
+                                    ""
+                                }
+                            }
+                        }
+
+                        // Update entries with day-based x values
+                        val normalizedEntries = entries.map { entry ->
+                            val dayOffset = ((entry.x - minTimestamp) / (24 * 60 * 60 * 1000)).toFloat()
+                            Entry(dayOffset, entry.y)
+                        }
+                        dataSet.values = normalizedEntries
+
+                        // Configure Y-axis
+                        val yAxis = lineChart.axisLeft
+                        yAxis.setDrawGridLines(true)
+                        yAxis.setDrawAxisLine(true)
+                        yAxis.setDrawLabels(true)
+                        yAxis.textSize = 12f
+                        yAxis.textColor = Color.BLACK
+                        yAxis.axisMinimum = 0f
+                        yAxis.axisMaximum = 100f
+                        yAxis.granularity = 10f
+
+                        // Disable right axis
+                        lineChart.axisRight.isEnabled = false
+
+                        // Calculate visible range
+                        val visibleRange = when {
+                            daysBetween <= 7 -> daysBetween.toFloat()
+                            else -> 7f
+                        }
+
+                        // Set visible range and move to latest entry
+                        lineChart.setVisibleXRange(1f, visibleRange)
+                        lineChart.moveViewToX(normalizedEntries.last().x)
+
+                        // Log entry values
+                        normalizedEntries.forEachIndexed { index, entry ->
+                            Log.d("GoalAdapter", "Entry $index - X: ${entry.x}, Y: ${entry.y}")
+                        }
+
+                        // Force update
+                        lineChart.notifyDataSetChanged()
                         lineChart.invalidate()
+
+                        Log.d("GoalAdapter", "Chart configuration completed")
                     } else {
                         Log.e("GoalAdapter", "No data available for chart")
                         lineChart.clear()

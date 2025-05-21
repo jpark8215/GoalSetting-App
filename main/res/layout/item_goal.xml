@@ -111,28 +111,13 @@
                     tools:text="Time Bound" />
             </LinearLayout>
 
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical" />
-            </HorizontalScrollView>
-
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/line_chart"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
                 android:layout_marginTop="25dp"
                 android:layout_marginBottom="25dp"
-                android:importantForAccessibility="yes"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/time_bound_text" />
+                android:importantForAccessibility="yes" />
 
             <!-- Buttons: Success, Edit, Delete -->
             <LinearLayout
