@@ -18,6 +18,7 @@ import com.developerjp.jieungoalsettingapp.R
 import com.developerjp.jieungoalsettingapp.data.DBHelper
 import com.developerjp.jieungoalsettingapp.databinding.FragmentHomeBinding
 import com.developerjp.jieungoalsettingapp.ui.dashboard.DashboardViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.Calendar
 
 
@@ -82,18 +83,49 @@ class HomeFragment : Fragment() {
                 // Retrieve the input values from EditText fields
                 val specific = binding.specific.text?.toString()
                 val measurable = measurableSeekBar.progress.toString()
-                val timeBound = timeBoundButton.tag?.toString() ?: timeBoundButton.text?.toString()
+                val timeBound = timeBoundButton.text.toString()
 
                 // Check if all values are not null before creating a new Goal instance
-                if (specific?.isNotEmpty() == true && measurable.isNotEmpty() && timeBound?.isNotEmpty() == true && timeBound != getString(
-                        R.string.select_date
-                    )
+                if (!specific.isNullOrEmpty() && measurable.isNotEmpty() && timeBound != getString(R.string.`when`)
                 ) {
                     if (dbHelper.isSpecificExists(specific)) {
-                        AlertDialog.Builder(context, R.style.RoundedDialog)
+                        MaterialAlertDialogBuilder(
+                            requireContext(),
+                            R.style.MaterialAlertDialog_Rounded
+                        )
                             .setTitle("Duplicate Goal")
-                            .setMessage("A goal with this title already exists!\nPlease choose a different title.")
-                            .setPositiveButton("OK", null)
+                            .setMessage("Uh oh! This goal title has already been claimed by a legendary quest.")
+                            .setBackground(
+                                resources.getDrawable(
+                                    R.drawable.rounded_dialog_background,
+                                    null
+                                )
+                            )
+                            .setPositiveButton("OK") { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .create()
+                            .apply {
+                                setOnShowListener {
+                                    // Style the title
+                                    findViewById<TextView>(android.R.id.title)?.apply {
+                                        setTextColor(resources.getColor(R.color.colorAccent, null))
+                                        textSize = 20f
+                                        setPadding(0, 0, 0, 20)
+                                    }
+                                    // Style the message
+                                    findViewById<TextView>(android.R.id.message)?.apply {
+                                        setTextColor(resources.getColor(R.color.textPrimary, null))
+                                        textSize = 17f
+                                        setPadding(50, 0, 0, 20)
+                                    }
+                                    // Style the dialog
+                                    getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
+                                        setTextColor(resources.getColor(R.color.purple_500, null))
+                                        textSize = 15f
+                                    }
+                                }
+                            }
                             .show()
 
                     } else {
@@ -143,9 +175,11 @@ class HomeFragment : Fragment() {
             requireContext(),
             { _: DatePicker, selectedYear: Int, selectedMonth: Int, selectedDay: Int ->
                 // Format for display
-                val displayFormat = String.format("%02d/%02d/%d", selectedMonth + 1, selectedDay, selectedYear)
+                val displayFormat =
+                    String.format("%02d/%02d/%d", selectedMonth + 1, selectedDay, selectedYear)
                 // Format for database storage
-                val dbFormat = String.format("%d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
+                val dbFormat =
+                    String.format("%d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
                 timeBoundButton.text = displayFormat
                 // Store the database format in a tag for later use
                 timeBoundButton.tag = dbFormat

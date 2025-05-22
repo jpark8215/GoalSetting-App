@@ -27,6 +27,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -216,11 +217,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         lineChart.setDragEnabled(true)
 
                         // Calculate date range
-                        val minTimestamp = sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
+                        val minTimestamp =
+                            sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
                         val maxDate = parseDate(latestGoalDetail.timeBound).time
-                        
+
                         Log.d("GoalAdapter", "Raw timestamps - Min: $minTimestamp, Max: $maxDate")
-                        Log.d("GoalAdapter", "Formatted dates - Min: ${Date(minTimestamp)}, Max: ${Date(maxDate)}")
+                        Log.d(
+                            "GoalAdapter",
+                            "Formatted dates - Min: ${Date(minTimestamp)}, Max: ${Date(maxDate)}"
+                        )
 
                         // Configure X-axis
                         val xAxis = lineChart.xAxis
@@ -231,18 +236,18 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         xAxis.textSize = 12f
                         xAxis.textColor = Color.BLACK
                         xAxis.labelRotationAngle = 45f
-                        
+
                         // Calculate number of days and set label count
                         val daysBetween = ((maxDate - minTimestamp) / (24 * 60 * 60 * 1000)).toInt()
                         val labelCount = minOf(daysBetween + 1, 7) // Show at most 7 labels
                         xAxis.setLabelCount(labelCount, true)
-                        
+
                         // Set X-axis limits
                         xAxis.axisMinimum = 0f
                         xAxis.axisMaximum = daysBetween.toFloat()
-                        
+
                         Log.d("GoalAdapter", "Days between: $daysBetween, Label count: $labelCount")
-                        
+
                         // Set X-axis formatter with explicit date calculation
                         xAxis.valueFormatter = object : ValueFormatter() {
                             override fun getFormattedValue(value: Float): String {
@@ -251,11 +256,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                                     val calendar = Calendar.getInstance()
                                     calendar.time = Date(minTimestamp)
                                     calendar.add(Calendar.DAY_OF_MONTH, dayOffset)
-                                    
+
                                     val day = calendar.get(Calendar.DAY_OF_MONTH)
                                     val month = calendar.get(Calendar.MONTH) + 1
                                     val formattedDate = "$month/$day"
-                                    Log.d("GoalAdapter", "Formatting day offset: $dayOffset -> $formattedDate")
+                                    Log.d(
+                                        "GoalAdapter",
+                                        "Formatting day offset: $dayOffset -> $formattedDate"
+                                    )
                                     formattedDate
                                 } catch (e: Exception) {
                                     Log.e("GoalAdapter", "Error formatting date", e)
@@ -266,7 +274,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                         // Update entries with day-based x values
                         val normalizedEntries = entries.map { entry ->
-                            val dayOffset = ((entry.x - minTimestamp) / (24 * 60 * 60 * 1000)).toFloat()
+                            val dayOffset =
+                                ((entry.x - minTimestamp) / (24 * 60 * 60 * 1000)).toFloat()
                             Entry(dayOffset, entry.y)
                         }
                         dataSet.values = normalizedEntries
@@ -324,33 +333,19 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                     // Delete button functionality with confirmation dialog
                     deleteButton.setOnClickListener {
-                        AlertDialog.Builder(itemView.context, R.style.RoundedDialog)
-                            .setTitle("Confirm Delete")
-                            .setMessage("Are you sure you want to delete this goal?")
-                            .setPositiveButton("Delete") { _, _ ->
-                                Log.d(
-                                    "GoalAdapter",
-                                    "Delete button clicked for specificId: ${latestGoalDetail.specificId}"
-                                )
-                                viewModel.deleteGoalsBySpecificId(latestGoalDetail.specificId)
-                            }.setNegativeButton("Cancel", null).show()
+                        viewModel.showDeleteConfirmation(
+                            itemView.context,
+                            latestGoalDetail.specificId
+                        )
                     }
 
                     // Edit button functionality
                     editButton.setOnClickListener {
-                        Log.d(
-                            "GoalAdapter",
-                            "Edit button clicked for specificId: ${latestGoalDetail.specificId}"
-                        )
                         viewModel.showEditDialog(itemView.context, latestGoalDetail)
                     }
 
                     // Success button functionality with congratulatory dialog
                     successButton.setOnClickListener {
-                        Log.d(
-                            "GoalAdapter",
-                            "Success button clicked for specificId: ${latestGoalDetail.specificId}"
-                        )
                         viewModel.updateGoalDetail(
                             specificId = latestGoalDetail.specificId,
                             specificText = latestGoalDetail.specificText,
@@ -413,8 +408,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)
         )
 
-        val dialog =
-            AlertDialog.Builder(context, R.style.RoundedDialog).setView(dialogView).create()
+        val dialog = MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded)
+            .setView(dialogView)
+            .create()
 
         buttonSave.setOnClickListener {
             val specificText = editSpecificText.text.toString()
@@ -435,7 +431,23 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         dialog.show()
     }
 
-    fun updateGoalDetail(specificId: Int, specificText: String, measurable: Int, timeBound: String) {
+    fun showDeleteConfirmation(context: Context, specificId: Int) {
+        MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded)
+            .setTitle("Confirm Delete")
+            .setMessage("Are you sure you want to delete this goal?")
+            .setPositiveButton("Delete") { _, _ ->
+                deleteGoalsBySpecificId(specificId)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    fun updateGoalDetail(
+        specificId: Int,
+        specificText: String,
+        measurable: Int,
+        timeBound: String
+    ) {
         dbHelper.updateGoalDetail(specificId, specificText, measurable, timeBound)
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
         refreshData()

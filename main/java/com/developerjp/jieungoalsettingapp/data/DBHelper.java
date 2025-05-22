@@ -104,7 +104,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         try {
             String query = "SELECT * FROM " + TABLE_GOAL + " WHERE " + SPECIFIC_COLUMN_TEXT + " = ?";
-            Cursor cursor = db.rawQuery(query, new String[]{specificText});
+            Cursor cursor = db.rawQuery(query, new String[]{specificText.toUpperCase()});
 
             if (cursor.moveToFirst()) {
                 exists = true; // Duplicate found

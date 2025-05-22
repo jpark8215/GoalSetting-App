@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.developerjp.jieungoalsettingapp.R
 import com.developerjp.jieungoalsettingapp.data.DBHelper
 import com.developerjp.jieungoalsettingapp.data.GoalDetail
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -66,7 +67,8 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
         val editSpecificText = dialogView.findViewById<EditText>(R.id.edit_specific_text)
         val editMeasurableSeekbar = dialogView.findViewById<SeekBar>(R.id.edit_measurable_seekbar)
         val editMeasurableValue = dialogView.findViewById<TextView>(R.id.edit_measurable_value)
-        val editTimeBoundDatePicker = dialogView.findViewById<DatePicker>(R.id.edit_time_bound_datepicker)
+        val editTimeBoundDatePicker =
+            dialogView.findViewById<DatePicker>(R.id.edit_time_bound_datepicker)
         val buttonSave = dialogView.findViewById<Button>(R.id.button_save)
         val buttonCancel = dialogView.findViewById<Button>(R.id.button_cancel)
 
@@ -87,7 +89,7 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
         val cal = Calendar.getInstance()
         val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
         val dbFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        
+
         try {
             // First try parsing with display format (MM/dd/yyyy)
             val date = displayFormat.parse(goalDetail.timeBound)
@@ -185,14 +187,20 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
                         val goal = completedGoals[position]
                         // Show options dialog
                         val options = arrayOf("Edit", "Delete")
-                        AlertDialog.Builder(view.context, R.style.RoundedDialog)
+                        MaterialAlertDialogBuilder(
+                            view.context,
+                            R.style.MaterialAlertDialog_Rounded
+                        )
                             .setTitle("Goal Options")
                             .setItems(options) { _, which ->
                                 when (which) {
                                     0 -> viewModel.showEditDialog(view.context, goal)
                                     1 -> {
                                         // Show delete confirmation
-                                        AlertDialog.Builder(view.context, R.style.RoundedDialog)
+                                        MaterialAlertDialogBuilder(
+                                            view.context,
+                                            R.style.MaterialAlertDialog_Rounded
+                                        )
                                             .setTitle("Confirm Delete")
                                             .setMessage("Are you sure you want to delete this goal?")
                                             .setPositiveButton("Delete") { _, _ ->

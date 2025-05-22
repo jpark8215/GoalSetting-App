@@ -20,14 +20,11 @@ class AchievementsFragment : Fragment() {
     private lateinit var adView: AdView
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val dbHelper = DBHelper.getInstance(requireContext())
         achievementsViewModel = ViewModelProvider(
-            this,
-            AchievementsViewModel.Companion.Factory(dbHelper)
+            this, AchievementsViewModel.Companion.Factory(dbHelper)
         )[AchievementsViewModel::class.java]
 
         _binding = FragmentAchievementsBinding.inflate(inflater, container, false)
