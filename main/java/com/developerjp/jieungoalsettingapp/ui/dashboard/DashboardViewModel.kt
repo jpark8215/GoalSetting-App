@@ -182,10 +182,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     // Create chart entries using all goal details
                     val entries = sortedGoalDetails.map { goalDetail ->
                         val timestampFloat = goalDetail.timestamp.time.toFloat()
-                        Log.d(
-                            "GoalAdapter",
-                            "Timestamp: ${goalDetail.timestamp}, Float: $timestampFloat, Measurable: ${goalDetail.measurable}"
-                        )
+
                         Entry(timestampFloat, goalDetail.measurable.toFloat())
                     }
 
@@ -221,12 +218,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                             sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
                         val maxDate = parseDate(latestGoalDetail.timeBound).time
 
-                        Log.d("GoalAdapter", "Raw timestamps - Min: $minTimestamp, Max: $maxDate")
-                        Log.d(
-                            "GoalAdapter",
-                            "Formatted dates - Min: ${Date(minTimestamp)}, Max: ${Date(maxDate)}"
-                        )
-
                         // Configure X-axis
                         val xAxis = lineChart.xAxis
                         xAxis.position = XAxis.XAxisPosition.BOTTOM
@@ -246,8 +237,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         xAxis.axisMinimum = 0f
                         xAxis.axisMaximum = daysBetween.toFloat()
 
-                        Log.d("GoalAdapter", "Days between: $daysBetween, Label count: $labelCount")
-
                         // Set X-axis formatter with explicit date calculation
                         xAxis.valueFormatter = object : ValueFormatter() {
                             override fun getFormattedValue(value: Float): String {
@@ -260,10 +249,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                                     val day = calendar.get(Calendar.DAY_OF_MONTH)
                                     val month = calendar.get(Calendar.MONTH) + 1
                                     val formattedDate = "$month/$day"
-                                    Log.d(
-                                        "GoalAdapter",
-                                        "Formatting day offset: $dayOffset -> $formattedDate"
-                                    )
+
                                     formattedDate
                                 } catch (e: Exception) {
                                     Log.e("GoalAdapter", "Error formatting date", e)
@@ -304,15 +290,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         lineChart.setVisibleXRange(1f, visibleRange)
                         lineChart.moveViewToX(normalizedEntries.last().x)
 
-                        // Log entry values
-                        normalizedEntries.forEachIndexed { index, entry ->
-                            Log.d("GoalAdapter", "Entry $index - X: ${entry.x}, Y: ${entry.y}")
-                        }
-
                         // Force update
                         lineChart.notifyDataSetChanged()
                         lineChart.invalidate()
-
                         Log.d("GoalAdapter", "Chart configuration completed")
                     } else {
                         Log.e("GoalAdapter", "No data available for chart")

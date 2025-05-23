@@ -1,7 +1,6 @@
 package com.developerjp.jieungoalsettingapp.ui.achievements
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -204,10 +203,7 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
                                             .setTitle("Confirm Delete")
                                             .setMessage("Are you sure you want to delete this goal?")
                                             .setPositiveButton("Delete") { _, _ ->
-                                                Log.d(
-                                                    "CompletedGoalsAdapter",
-                                                    "Delete clicked for specificId: ${goal.specificId}"
-                                                )
+
                                                 viewModel.deleteGoalsBySpecificId(goal.specificId)
                                             }
                                             .setNegativeButton("Cancel", null)
