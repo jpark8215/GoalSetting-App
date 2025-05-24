@@ -20,11 +20,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.developerjp.jieungoalsettingapp.R
 import com.developerjp.jieungoalsettingapp.data.DBHelper
 import com.developerjp.jieungoalsettingapp.data.GoalDetail
-import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -150,7 +150,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             private val specificTextView: TextView = itemView.findViewById(R.id.specific_text)
             private val measurableTextView: TextView = itemView.findViewById(R.id.measurable_text)
             private val timeBoundTextView: TextView = itemView.findViewById(R.id.time_bound_text)
-            private val lineChart: LineChart = itemView.findViewById(R.id.line_chart)
+            private val barChart: BarChart = itemView.findViewById(R.id.line_chart)
             private val deleteButton: Button = itemView.findViewById(R.id.button_delete)
             private val editButton: Button = itemView.findViewById(R.id.button_edit)
             private val successButton: Button = itemView.findViewById(R.id.button_success)
@@ -179,47 +179,43 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     timeBoundTextView.text =
                         dateFormat.format(parseDate(latestGoalDetail.timeBound))
 
-                    // Create chart entries using all goal details
-                    val entries = sortedGoalDetails.map { goalDetail ->
-                        val timestampFloat = goalDetail.timestamp.time.toFloat()
+                    // Calculate date range
+                    val minTimestamp = sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
+                    val maxDate = parseDate(latestGoalDetail.timeBound).time
 
-                        Entry(timestampFloat, goalDetail.measurable.toFloat())
+                    // Create bar entries using all goal details
+                    val entries = sortedGoalDetails.map { goalDetail ->
+                        val dayOffset = ((goalDetail.timestamp.time - minTimestamp) / (24 * 60 * 60 * 1000)).toFloat()
+                        BarEntry(dayOffset, goalDetail.measurable.toFloat())
                     }
 
                     if (entries.isNotEmpty()) {
-                        val dataSet = LineDataSet(entries, "%").apply {
-                            color = Color.BLUE
-                            valueTextColor = Color.BLACK
-                            lineWidth = 2f
-                            setDrawCircles(true)
-                            setDrawCircleHole(true)
-                            setDrawValues(true)
-                            mode = LineDataSet.Mode.LINEAR
-                            setDrawFilled(false)
-                            circleRadius = 6f
-                            circleHoleRadius = 3f
+                        val dataSet = BarDataSet(entries, "%").apply {
+                            color = Color.CYAN
+                            valueTextColor = Color.DKGRAY
+                            valueTextSize = 10f
+                            valueFormatter = object : ValueFormatter() {
+                                override fun getFormattedValue(value: Float): String {
+                                    return value.toInt().toString()
+                                }
+                            }
                         }
 
-                        val lineData = LineData(dataSet)
-                        lineChart.data = lineData
+                        val barData = BarData(dataSet)
+                        barChart.data = barData
 
                         // Basic chart setup
-                        lineChart.description.isEnabled = false
-                        lineChart.legend.isEnabled = false
-                        lineChart.setDrawGridBackground(false)
-                        lineChart.setDrawBorders(false)
-                        lineChart.setScaleEnabled(true)
-                        lineChart.setPinchZoom(true)
-                        lineChart.setTouchEnabled(true)
-                        lineChart.setDragEnabled(true)
-
-                        // Calculate date range
-                        val minTimestamp =
-                            sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
-                        val maxDate = parseDate(latestGoalDetail.timeBound).time
+                        barChart.description.isEnabled = false
+                        barChart.legend.isEnabled = false
+                        barChart.setDrawGridBackground(false)
+                        barChart.setDrawBorders(false)
+                        barChart.setScaleEnabled(true)
+                        barChart.setPinchZoom(true)
+                        barChart.setTouchEnabled(true)
+                        barChart.setDragEnabled(true)
 
                         // Configure X-axis
-                        val xAxis = lineChart.xAxis
+                        val xAxis = barChart.xAxis
                         xAxis.position = XAxis.XAxisPosition.BOTTOM
                         xAxis.setDrawGridLines(true)
                         xAxis.setDrawAxisLine(true)
@@ -248,9 +244,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
                                     val day = calendar.get(Calendar.DAY_OF_MONTH)
                                     val month = calendar.get(Calendar.MONTH) + 1
-                                    val formattedDate = "$month/$day"
-
-                                    formattedDate
+                                    "$month/$day"
                                 } catch (e: Exception) {
                                     Log.e("GoalAdapter", "Error formatting date", e)
                                     ""
@@ -258,16 +252,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                             }
                         }
 
-                        // Update entries with day-based x values
-                        val normalizedEntries = entries.map { entry ->
-                            val dayOffset =
-                                ((entry.x - minTimestamp) / (24 * 60 * 60 * 1000)).toFloat()
-                            Entry(dayOffset, entry.y)
-                        }
-                        dataSet.values = normalizedEntries
-
                         // Configure Y-axis
-                        val yAxis = lineChart.axisLeft
+                        val yAxis = barChart.axisLeft
                         yAxis.setDrawGridLines(true)
                         yAxis.setDrawAxisLine(true)
                         yAxis.setDrawLabels(true)
@@ -278,7 +264,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         yAxis.granularity = 10f
 
                         // Disable right axis
-                        lineChart.axisRight.isEnabled = false
+                        barChart.axisRight.isEnabled = false
 
                         // Calculate visible range
                         val visibleRange = when {
@@ -287,17 +273,17 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         }
 
                         // Set visible range and move to latest entry
-                        lineChart.setVisibleXRange(1f, visibleRange)
-                        lineChart.moveViewToX(normalizedEntries.last().x)
+                        barChart.setVisibleXRange(1f, visibleRange)
+                        barChart.moveViewToX(entries.last().x)
 
                         // Force update
-                        lineChart.notifyDataSetChanged()
-                        lineChart.invalidate()
+                        barChart.notifyDataSetChanged()
+                        barChart.invalidate()
                         Log.d("GoalAdapter", "Chart configuration completed")
                     } else {
                         Log.e("GoalAdapter", "No data available for chart")
-                        lineChart.clear()
-                        lineChart.invalidate()
+                        barChart.clear()
+                        barChart.invalidate()
                     }
 
                     // Hide edit and success buttons if goal is completed

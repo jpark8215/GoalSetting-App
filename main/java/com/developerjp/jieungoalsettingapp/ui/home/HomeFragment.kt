@@ -94,12 +94,9 @@ class HomeFragment : Fragment() {
                             R.style.MaterialAlertDialog_Rounded
                         )
                             .setTitle("Duplicate Goal")
-                            .setMessage("Uh oh! This goal title has already been claimed by a legendary quest.")
+                            .setMessage("This goal title has already been claimed\n by a legendary quest.")
                             .setBackground(
-                                resources.getDrawable(
-                                    R.drawable.rounded_dialog_background,
-                                    null
-                                )
+                                resources.getDrawable(R.drawable.rounded_dialog_background, null)
                             )
                             .setPositiveButton("OK") { dialog, _ ->
                                 dialog.dismiss()
@@ -117,7 +114,7 @@ class HomeFragment : Fragment() {
                                     findViewById<TextView>(android.R.id.message)?.apply {
                                         setTextColor(resources.getColor(R.color.textPrimary, null))
                                         textSize = 17f
-                                        setPadding(50, 0, 0, 20)
+                                        setPadding(70, 0, 0, 20)
                                     }
                                     // Style the dialog
                                     getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
