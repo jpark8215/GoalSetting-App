@@ -165,7 +165,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     Date()
                 }
             }
-
+            
             fun bind(goalDetails: List<GoalDetail>, viewModel: DashboardViewModel) {
                 if (goalDetails.isNotEmpty()) {
                     Log.d("GoalAdapter", "Binding ${goalDetails.size} goal details")
@@ -179,13 +179,32 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     timeBoundTextView.text =
                         dateFormat.format(parseDate(latestGoalDetail.timeBound))
 
-                    // Calculate date range
-                    val minTimestamp = sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
-                    val maxDate = parseDate(latestGoalDetail.timeBound).time
+                    // Get calendar instance for date calculations
+                    val calendar = Calendar.getInstance()
 
-                    // Create bar entries using all goal details
+                    // Find the earliest date (normalize to start of day)
+                    val minTimestamp =
+                        sortedGoalDetails.minByOrNull { it.timestamp }?.timestamp?.time ?: 0L
+                    calendar.timeInMillis = minTimestamp
+                    calendar.set(Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(Calendar.MINUTE, 0)
+                    calendar.set(Calendar.SECOND, 0)
+                    calendar.set(Calendar.MILLISECOND, 0)
+                    val startOfEarliestDay = calendar.timeInMillis
+
+                    // Create bar entries using normalized date calculations
                     val entries = sortedGoalDetails.map { goalDetail ->
-                        val dayOffset = ((goalDetail.timestamp.time - minTimestamp) / (24 * 60 * 60 * 1000)).toFloat()
+                        // Normalize the goal timestamp to start of day
+                        calendar.timeInMillis = goalDetail.timestamp.time
+                        calendar.set(Calendar.HOUR_OF_DAY, 0)
+                        calendar.set(Calendar.MINUTE, 0)
+                        calendar.set(Calendar.SECOND, 0)
+                        calendar.set(Calendar.MILLISECOND, 0)
+                        val goalDayStart = calendar.timeInMillis
+
+                        // Calculate day difference from the earliest day and shift bars to the right
+                        val dayOffset =
+                            ((goalDayStart - startOfEarliestDay) / (24 * 60 * 60 * 1000)).toFloat() + 0.5f
                         BarEntry(dayOffset, goalDetail.measurable.toFloat())
                     }
 
@@ -202,6 +221,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         }
 
                         val barData = BarData(dataSet)
+                        barData.barWidth = 0.9f
                         barChart.data = barData
 
                         // Basic chart setup
@@ -224,26 +244,28 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                         xAxis.textColor = Color.BLACK
                         xAxis.labelRotationAngle = 45f
 
-                        // Calculate number of days and set label count
-                        val daysBetween = ((maxDate - minTimestamp) / (24 * 60 * 60 * 1000)).toInt()
+                        // Calculate the date range using normalized dates
+                        val maxDate = parseDate(latestGoalDetail.timeBound).time
+                        val daysBetween =
+                            ((maxDate - startOfEarliestDay) / (24 * 60 * 60 * 1000)).toInt()
                         val labelCount = minOf(daysBetween + 1, 7) // Show at most 7 labels
                         xAxis.setLabelCount(labelCount, true)
 
-                        // Set X-axis limits
+                        // Set X-axis limits with proper padding for shifted bars
                         xAxis.axisMinimum = 0f
-                        xAxis.axisMaximum = daysBetween.toFloat()
+                        xAxis.axisMaximum = daysBetween.toFloat() + 1f
 
-                        // Set X-axis formatter with explicit date calculation
+                        // Set X-axis formatter with proper date calculation
                         xAxis.valueFormatter = object : ValueFormatter() {
                             override fun getFormattedValue(value: Float): String {
                                 return try {
                                     val dayOffset = value.toInt()
-                                    val calendar = Calendar.getInstance()
-                                    calendar.time = Date(minTimestamp)
-                                    calendar.add(Calendar.DAY_OF_MONTH, dayOffset)
+                                    val cal = Calendar.getInstance()
+                                    cal.timeInMillis = startOfEarliestDay
+                                    cal.add(Calendar.DAY_OF_MONTH, dayOffset)
 
-                                    val day = calendar.get(Calendar.DAY_OF_MONTH)
-                                    val month = calendar.get(Calendar.MONTH) + 1
+                                    val day = cal.get(Calendar.DAY_OF_MONTH)
+                                    val month = cal.get(Calendar.MONTH) + 1
                                     "$month/$day"
                                 } catch (e: Exception) {
                                     Log.e("GoalAdapter", "Error formatting date", e)
@@ -339,7 +361,6 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             }
         }
     }
-
 
     fun showEditDialog(context: Context, goalDetail: GoalDetail) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_goal, null)
