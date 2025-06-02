@@ -85,20 +85,8 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    // Add a new goal detail to the database
-    fun addGoal(goalDetail: GoalDetail) {
-        val specificId = dbHelper.insertSpecific(goalDetail.specificText)
-        val timestamp = System.currentTimeMillis()
-
-        dbHelper.insertGoalDetail(
-            specificId.toInt(), goalDetail.measurable, goalDetail.timeBound, timestamp
-        )
-        _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
-        refreshData()
-    }
-
     // Delete goals by specific ID
-    fun deleteGoalsBySpecificId(specificId: Int) {
+    private fun deleteGoalsBySpecificId(specificId: Int) {
         dbHelper.deleteGoalsBySpecificId(specificId)
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
         refreshData()
@@ -165,7 +153,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
                     Date()
                 }
             }
-            
+
             fun bind(goalDetails: List<GoalDetail>, viewModel: DashboardViewModel) {
                 if (goalDetails.isNotEmpty()) {
                     Log.d("GoalAdapter", "Binding ${goalDetails.size} goal details")
@@ -406,6 +394,47 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             val month = editTimeBoundDatePicker.month
             val day = editTimeBoundDatePicker.dayOfMonth
             val timeBound = "$year-${month + 1}-$day"
+
+            // Check if the new title is different from the current one
+            if (specificText != goalDetail.specificText) {
+                // Check for duplicates only if the title has changed
+                if (dbHelper.isSpecificExists(specificText)) {
+                    // Show error dialog if duplicate exists
+                    MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded)
+                        .setTitle("Duplicate Goal")
+                        .setMessage("This goal title has already been claimed\nby a legendary quest.")
+                        .setBackground(
+                            context.resources.getDrawable(R.drawable.rounded_dialog_background, null)
+                        )
+                        .setPositiveButton("OK") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .create()
+                        .apply {
+                            setOnShowListener {
+                                // Style the title
+                                findViewById<TextView>(android.R.id.title)?.apply {
+                                    setTextColor(context.resources.getColor(R.color.colorAccent, null))
+                                    textSize = 20f
+                                    setPadding(0, 0, 0, 20)
+                                }
+                                // Style the message
+                                findViewById<TextView>(android.R.id.message)?.apply {
+                                    setTextColor(context.resources.getColor(R.color.textPrimary, null))
+                                    textSize = 17f
+                                    setPadding(60, 0, 0, 20)
+                                }
+                                // Style the dialog
+                                getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
+                                    setTextColor(context.resources.getColor(R.color.purple_500, null))
+                                    textSize = 15f
+                                }
+                            }
+                        }
+                        .show()
+                    return@setOnClickListener
+                }
+            }
 
             updateGoalDetail(goalDetail.specificId, specificText, measurable, timeBound)
             dialog.dismiss()

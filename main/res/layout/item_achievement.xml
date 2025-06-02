@@ -27,7 +27,6 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/specific_text_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
@@ -53,7 +52,6 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/time_bound_text_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"

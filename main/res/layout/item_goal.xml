@@ -61,7 +61,6 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/measurable_text_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
@@ -121,13 +120,14 @@
 
             <!-- Buttons: Success, Edit, Delete -->
             <LinearLayout
-                android:layout_width="match_parent"
+                style="?android:attr/buttonBarStyle" android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:weightSum="3">
 
                 <Button
                     android:id="@+id/button_success"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
@@ -138,6 +138,7 @@
 
                 <Button
                     android:id="@+id/button_edit"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
@@ -148,6 +149,7 @@
 
                 <Button
                     android:id="@+id/button_delete"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"

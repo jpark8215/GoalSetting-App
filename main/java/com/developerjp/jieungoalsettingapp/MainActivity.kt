@@ -54,10 +54,4 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
-    fun onBackPressedDispatcher() {
-        val navController = findNavController(R.id.nav_host_fragment_activity_main)
-        if (!navController.popBackStack()) {
-            super.onBackPressedDispatcher
-        }
-    }
 }

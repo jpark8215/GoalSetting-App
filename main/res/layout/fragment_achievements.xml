@@ -127,7 +127,6 @@
 
         <!-- Empty state -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/empty_state"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
@@ -141,7 +140,6 @@
 
         <!-- Error state -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/error_state"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"

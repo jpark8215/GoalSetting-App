@@ -147,7 +147,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         try {
             // Try parsing with different formats
-            Date date = null;
+            Date date;
             try {
                 date = DATE_ONLY_FORMAT.parse(dateStr);
             } catch (ParseException e) {
@@ -159,6 +159,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     return DATE_ONLY_FORMAT.format(new Date());
                 }
             }
+            assert date != null;
             return DATE_ONLY_FORMAT.format(date);
         } catch (Exception e) {
             return DATE_ONLY_FORMAT.format(new Date());

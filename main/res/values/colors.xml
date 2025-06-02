@@ -3,9 +3,8 @@
     <color name="primaryColor">#FF6F00</color> <!-- A vibrant orange -->
     <color name="backgroundColor">#FFFFFF</color> <!-- White background -->
     <color name="textPrimary">#212121</color> <!-- Dark grey for primary text -->
-    <color name="textSecondary">#757575</color> <!-- Medium grey for secondary text -->
+    <!-- Medium grey for secondary text -->
     <color name="trackInactive">#BDBDBD</color> <!-- Light grey for inactive slider track -->
-    <color name="transparent">#00000000</color>
 
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
@@ -16,21 +15,7 @@
     <color name="white">#FFFFFFFF</color>
 
     <!-- Material Design 3 theme colors -->
-    <color name="md_theme_primary">#6750A4</color>
-    <color name="md_theme_onPrimary">#FFFFFF</color>
-    <color name="md_theme_primaryContainer">#EADDFF</color>
-    <color name="md_theme_onPrimaryContainer">#21005E</color>
-    <color name="md_theme_secondary">#625B71</color>
-    <color name="md_theme_onSecondary">#FFFFFF</color>
-    <color name="md_theme_secondaryContainer">#E8DEF8</color>
-    <color name="md_theme_onSecondaryContainer">#1E192B</color>
-    <color name="md_theme_background">#FFFBFE</color>
-    <color name="md_theme_onBackground">#1C1B1F</color>
     <color name="md_theme_surface">#FFFBFE</color>
-    <color name="md_theme_onSurface">#1C1B1F</color>
-    <color name="md_theme_surfaceVariant">#E7E0EC</color>
-    <color name="md_theme_onSurfaceVariant">#49454F</color>
-    <color name="md_theme_outline">#79747E</color>
 
     <!-- Custom accent color -->
     <color name="colorAccent">#FF4081</color>

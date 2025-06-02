@@ -12,12 +12,10 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.developerjp.jieungoalsettingapp.R
 import com.developerjp.jieungoalsettingapp.data.DBHelper
 import com.developerjp.jieungoalsettingapp.databinding.FragmentHomeBinding
-import com.developerjp.jieungoalsettingapp.ui.dashboard.DashboardViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.Calendar
 
@@ -32,7 +30,6 @@ class HomeFragment : Fragment() {
     private lateinit var measurableSeekBar: SeekBar
     private lateinit var seekBarValue: TextView  // TextView to display the SeekBar value
 
-    private val dashboardViewModel: DashboardViewModel by activityViewModels()
     private lateinit var dbHelper: DBHelper
 
     override fun onCreateView(
@@ -94,7 +91,7 @@ class HomeFragment : Fragment() {
                             R.style.MaterialAlertDialog_Rounded
                         )
                             .setTitle("Duplicate Goal")
-                            .setMessage("This goal title has already been claimed\n by a legendary quest.")
+                            .setMessage("This goal title has already been claimed\nby a legendary quest.")
                             .setBackground(
                                 resources.getDrawable(R.drawable.rounded_dialog_background, null)
                             )
@@ -114,7 +111,7 @@ class HomeFragment : Fragment() {
                                     findViewById<TextView>(android.R.id.message)?.apply {
                                         setTextColor(resources.getColor(R.color.textPrimary, null))
                                         textSize = 17f
-                                        setPadding(70, 0, 0, 20)
+                                        setPadding(60, 0, 0, 20)
                                     }
                                     // Style the dialog
                                     getButton(AlertDialog.BUTTON_POSITIVE)?.apply {

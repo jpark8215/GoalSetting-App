@@ -3,24 +3,13 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_achievements">Achievements</string>
-    <string name="submit">Submit</string>
-    <string name="textview">TextView</string>
-    <string name="search_how_to_achieve_your_goal">Search how to achieve your goal!</string>
     <string name="what">What is your goal?</string>
     <string name="when">What is your target date?</string>
     <string name="let_s_go">Let\'s Go</string>
-    <string name="delete">Delete</string>
-    <string name="edit">Edit</string>
 
-    <string name="select_date">Select Date</string>
     <string name="goal_measure">How close are you to your goal?</string>
     <string name="very_far">Far - 0%</string>
     <string name="very_close">Close - 100%</string>
 
     <!-- Empty and Error states -->
-    <string name="no_goals_yet">No Goals Yet</string>
-    <string name="add_first_goal">Add your first goal by clicking the + button</string>
-    <string name="error_occurred">Oops! Something went wrong</string>
-    <string name="try_again_later">Please try again later</string>
-    <string name="retry">Retry</string>
 </resources>
