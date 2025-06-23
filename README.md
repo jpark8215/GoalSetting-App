@@ -1,67 +1,116 @@
-# GoalQuest
 
-GoalQuest is a goal-setting and tracking application that helps users define, manage, and achieve their personal goals. The app provides a user-friendly interface to create goals, track progress, and visualize achievements.
+# GoalQuest 
 
-## Features
+## Overview
 
-- Create and manage personal goals
-- Visualize progress with charts
-- Set target dates and reminders
-- User-friendly dashboard
-- Error and empty state handling
-- Material Design 3 compliant UI
+**GoalQuest** is an Android application designed to help users set, track, and achieve their goals. The app is structured using the MVVM (Model-View-ViewModel) architecture and leverages Fragments for UI navigation.
 
-## Screenshots
+---
 
+## Project Structure
 
+```
+app/
+  ├── build.gradle
+  ├── google-services.json
+  ├── proguard-rules.pro
+  ├── src/
+  │   ├── main/
+  │   │   ├── AndroidManifest.xml
+  │   │   ├── java/com/developerjp/jieungoalsettingapp/
+  │   │   │   ├── data/
+  │   │   │   │   ├── DBHelper.java
+  │   │   │   │   ├── Goal.java
+  │   │   │   │   └── GoalDetail.java
+  │   │   │   ├── MainActivity.kt
+  │   │   │   └── ui/
+  │   │   │       ├── achievements/
+  │   │   │       │   ├── AchievementsFragment.kt
+  │   │   │       │   └── AchievementsViewModel.kt
+  │   │   │       ├── dashboard/
+  │   │   │       │   ├── DashboardFragment.kt
+  │   │   │       │   ├── DashboardViewModel.kt
+  │   │   │       │   └── GoalAdapter.kt
+  │   │   │       └── home/
+  │   │   │           └── HomeFragment.kt
+  │   │   └── res/
+  │   │       └── ... (layouts, drawables, values, etc.)
+  │   └── test/
+  │       └── ... (unit tests)
+  └── ... (other build and config files)
+```
 
-## Installation
+---
 
-To get started with GoalQuest, follow these steps:
+## Main Components
 
-1. **Clone the repository:**
+### 1. Data Layer (`data/`)
+- **DBHelper.java**: Handles SQLite database operations (CRUD for goals and details).
+- **Goal.java**: Data model representing a goal.
+- **GoalDetail.java**: Data model for detailed goal information.
 
-   ```bash
-   git clone https://github.com/jpark8215/goalquest.git
-   cd goalquest
-   ```
+### 2. UI Layer (`ui/`)
+- **achievements/**
+  - `AchievementsFragment.kt`: UI for displaying user achievements.
+  - `AchievementsViewModel.kt`: ViewModel for achievements logic.
+- **dashboard/**
+  - `DashboardFragment.kt`: UI for listing and managing goals.
+  - `DashboardViewModel.kt`: ViewModel for dashboard logic.
+  - `GoalAdapter.kt`: RecyclerView adapter for displaying goals.
+- **home/**
+  - `HomeFragment.kt`: Main landing page fragment.
 
-2. **Open the project in Android Studio.**
+### 3. Main Activity
+- **MainActivity.kt**: Hosts the navigation and fragment container.
 
-3. **Sync the project with Gradle files.**
+### 4. Resources (`res/`)
+- **layout/**: XML files for activities, fragments, dialogs, and list items.
+- **drawable/**: Icons and images.
+- **values/**: Colors, strings, styles, and themes.
+- **navigation/**: Navigation graph for fragment transitions.
 
-4. **Run the app on an emulator or physical device.**
+---
 
-## Usage
+## Navigation
 
-1. Launch the app.
-2. Navigate to the **Home** screen to create your first goal.
-3. Use the **Dashboard** to track your progress and visualize your achievements.
-4. Access the **Achievements** screen to view completed goals.
+- Uses a bottom navigation bar (`bottom_nav_menu.xml`) to switch between Home, Dashboard, and Achievements.
+- Navigation is managed via the Navigation Component (`mobile_navigation.xml`).
 
-## Contributing
+---
 
-Contributions are welcome! If you would like to contribute to GoalQuest, please follow these steps:
+## Database
 
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix:
-   ```bash
-   git checkout -b feature/YourFeature
-   ```
-3. Make your changes and commit them:
-   ```bash
-   git commit -m "Add some feature"
-   ```
-4. Push to the branch:
-   ```bash
-   git push origin feature/YourFeature
-   ```
-5. Open a pull request.
+- Local SQLite database managed by `DBHelper.java`.
+- Stores goals and their details.
 
-## License
+---
 
-This project is licensed under the MIT License 
+## Testing
 
-## Contact
+- Instrumented and unit tests are located under `src/androidTest/` and `src/test/`.
 
-For any inquiries, please visit jpark8215.github.io
+---
+
+## How to Extend
+
+- **Add new features**: Create new Fragments/ViewModels under `ui/`.
+- **Add new data models**: Place them in the `data/` directory and update `DBHelper.java` as needed.
+- **UI changes**: Update or add new layouts in `res/layout/`.
+
+---
+
+## Build & Run
+
+1. Open the project in Android Studio.
+2. Sync Gradle.
+3. Build and run on an emulator or device.
+
+---
+
+## Contribution Guidelines
+
+- Follow MVVM architecture.
+- Use Fragments for new screens.
+- Write unit and instrumented tests for new features.
+
+---
