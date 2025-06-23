@@ -9,7 +9,6 @@ import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -110,7 +109,7 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
             cal.get(Calendar.DAY_OF_MONTH)
         )
 
-        val dialog = AlertDialog.Builder(context, R.style.RoundedDialog)
+        val dialog = MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded)
             .setView(dialogView)
             .create()
 
@@ -130,9 +129,6 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
                     MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded)
                         .setTitle("Duplicate Goal")
                         .setMessage("This goal title has already been claimed\nby a legendary quest.")
-                        .setBackground(
-                            context.resources.getDrawable(R.drawable.rounded_dialog_background, null)
-                        )
                         .setPositiveButton("OK") { dialog, _ ->
                             dialog.dismiss()
                         }
@@ -141,20 +137,20 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
                             setOnShowListener {
                                 // Style the title
                                 findViewById<TextView>(android.R.id.title)?.apply {
-                                    setTextColor(context.resources.getColor(R.color.colorAccent, null))
-                                    textSize = 20f
+                                    setTextColor(resources.getColor(R.color.colorAccent, null))
+                                    textSize = 14f
                                     setPadding(0, 0, 0, 20)
                                 }
                                 // Style the message
                                 findViewById<TextView>(android.R.id.message)?.apply {
-                                    setTextColor(context.resources.getColor(R.color.textPrimary, null))
-                                    textSize = 17f
-                                    setPadding(60, 0, 0, 20)
+                                    setTextColor(resources.getColor(R.color.textPrimary, null))
+                                    textSize = 14f
+                                    setPadding(70, 0, 0, 20)
                                 }
                                 // Style the dialog
-                                getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
-                                    setTextColor(context.resources.getColor(R.color.purple_500, null))
-                                    textSize = 15f
+                                getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.apply {
+                                    setTextColor(resources.getColor(R.color.purple_500, null))
+                                    textSize = 12f
                                 }
                             }
                         }

@@ -92,9 +92,6 @@ class HomeFragment : Fragment() {
                         )
                             .setTitle("Duplicate Goal")
                             .setMessage("This goal title has already been claimed\nby a legendary quest.")
-                            .setBackground(
-                                resources.getDrawable(R.drawable.rounded_dialog_background, null)
-                            )
                             .setPositiveButton("OK") { dialog, _ ->
                                 dialog.dismiss()
                             }
@@ -104,19 +101,19 @@ class HomeFragment : Fragment() {
                                     // Style the title
                                     findViewById<TextView>(android.R.id.title)?.apply {
                                         setTextColor(resources.getColor(R.color.colorAccent, null))
-                                        textSize = 20f
+                                        textSize = 14f
                                         setPadding(0, 0, 0, 20)
                                     }
                                     // Style the message
                                     findViewById<TextView>(android.R.id.message)?.apply {
                                         setTextColor(resources.getColor(R.color.textPrimary, null))
-                                        textSize = 17f
-                                        setPadding(60, 0, 0, 20)
+                                        textSize = 14f
+                                        setPadding(70, 0, 0, 20)
                                     }
                                     // Style the dialog
                                     getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
                                         setTextColor(resources.getColor(R.color.purple_500, null))
-                                        textSize = 15f
+                                        textSize = 12f
                                     }
                                 }
                             }

@@ -8,6 +8,7 @@
 
     <!-- AppBar with CollapsingToolbarLayout -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/Theme.GoalQuest.AppBarOverlay">
@@ -41,7 +42,7 @@
                     android:fontFamily="@font/delius_swash_caps"
                     android:text="Set goals and track the progress!"
                     android:textAlignment="center"
-                    android:textColor="@color/trackInactive"
+                    android:textColor="@android:color/white"
                     android:textSize="20sp" />
 
                 <!--                <ImageView-->

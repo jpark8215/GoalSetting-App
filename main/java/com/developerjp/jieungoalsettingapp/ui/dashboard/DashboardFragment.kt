@@ -16,7 +16,7 @@ class DashboardFragment : Fragment() {
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
     private lateinit var dashboardViewModel: DashboardViewModel
-    private lateinit var adapter: DashboardViewModel.GoalAdapter
+    private lateinit var adapter: GoalAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +41,7 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = DashboardViewModel.GoalAdapter(emptyMap(), dashboardViewModel)
+        adapter = GoalAdapter(emptyMap(), dashboardViewModel)
         binding.recyclerViewGoals.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@DashboardFragment.adapter

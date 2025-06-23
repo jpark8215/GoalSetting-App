@@ -363,34 +363,32 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public void deleteGoalsBySpecificId(int specificId) {
-        SQLiteDatabase db = getWritableDatabase();
 
-        try {
-            db.beginTransaction();
+        try (SQLiteDatabase db = this.getWritableDatabase()) {
+            // First, delete from goal_detail_table
+            db.delete(TABLE_GOAL_DETAIL, GOAL_DETAIL_COLUMN_SPECIFIC_ID + " = ?", new String[]{String.valueOf(specificId)});
 
-            // Delete rows from goal_detail_table with the given specific_id
-            String goalDetailSelection = GOAL_DETAIL_COLUMN_SPECIFIC_ID + " = ?";
-            String[] goalDetailSelectionArgs = {String.valueOf(specificId)};
-            db.delete(TABLE_GOAL_DETAIL, goalDetailSelection, goalDetailSelectionArgs);
-
-            // Delete the row from goal_table with the given specific_id
-            String specificSelection = SPECIFIC_COLUMN_ID + " = ?";
-            String[] specificSelectionArgs = {String.valueOf(specificId)};
-            db.delete(TABLE_GOAL, specificSelection, specificSelectionArgs);
-
-            db.setTransactionSuccessful();
+            // Then, delete from specific_table
+            db.delete(TABLE_GOAL, SPECIFIC_COLUMN_ID + " = ?", new String[]{String.valueOf(specificId)});
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            db.endTransaction();
-            db.close(); // Close database connection
         }
     }
 
 
-    public void updateGoalDetail(int specificId, @NotNull String specificText, int measurable, @NotNull String timeBound) {
+    public void updateGoalProgress(int specificId, int progress) {
+        // First, get the latest goal detail to retrieve the time_bound
+        GoalDetail latestGoalDetail = getGoalDetailBySpecificId(specificId);
+        if (latestGoalDetail != null) {
+            // Insert a new goal detail entry with the updated progress
+            insertGoalDetail(specificId, progress, latestGoalDetail.getTimeBound(), System.currentTimeMillis());
+        }
+    }
 
-        try (SQLiteDatabase db = this.getWritableDatabase()) {
+    public void updateGoalDetail(int specificId, @NotNull String specificText, int measurable, @NotNull String timeBound) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        try {
             // Check if specificId already exists in goal_table
             String[] specificProjection = {SPECIFIC_COLUMN_ID};
             String specificSelection = SPECIFIC_COLUMN_ID + " = ?";
