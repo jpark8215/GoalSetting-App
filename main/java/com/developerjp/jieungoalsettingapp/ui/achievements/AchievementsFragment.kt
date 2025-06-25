@@ -11,13 +11,15 @@ import com.developerjp.jieungoalsettingapp.data.DBHelper
 import com.developerjp.jieungoalsettingapp.databinding.FragmentAchievementsBinding
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.AdListener
 
 class AchievementsFragment : Fragment() {
     private var _binding: FragmentAchievementsBinding? = null
     private val binding get() = _binding!!
     private lateinit var achievementsViewModel: AchievementsViewModel
     private lateinit var adapter: AchievementsViewModel.CompletedGoalsAdapter
-    private lateinit var adView: AdView
+    private lateinit var bottomAdView: AdView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -29,10 +31,10 @@ class AchievementsFragment : Fragment() {
 
         _binding = FragmentAchievementsBinding.inflate(inflater, container, false)
 
-        // Initialize and load the ad
-        adView = binding.adView
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
+        // Initialize and load the bottom ad
+        bottomAdView = binding.achievementsBottomAdView
+        val bottomAdRequest = AdRequest.Builder().build()
+        bottomAdView.loadAd(bottomAdRequest)
 
         setupViews()
         observeViewModel()
@@ -40,18 +42,18 @@ class AchievementsFragment : Fragment() {
     }
 
     override fun onPause() {
-        adView.pause()
+        bottomAdView.pause()
         super.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        adView.resume()
+        bottomAdView.resume()
         achievementsViewModel.refreshData()
     }
 
     override fun onDestroy() {
-        adView.destroy()
+        bottomAdView.destroy()
         super.onDestroy()
     }
 

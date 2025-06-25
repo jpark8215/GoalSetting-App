@@ -61,6 +61,9 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
     }
 
     fun showEditDialog(context: Context, goalDetail: GoalDetail) {
+        // Get the latest goal detail from the database to ensure we have the most recent data
+        val latestGoalDetail = getLatestGoalDetail(goalDetail.specificId) ?: goalDetail
+        
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_goal, null)
         val editSpecificText = dialogView.findViewById<EditText>(R.id.edit_specific_text)
         val editMeasurableSeekbar = dialogView.findViewById<SeekBar>(R.id.edit_measurable_seekbar)
@@ -70,9 +73,9 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
         val buttonSave = dialogView.findViewById<Button>(R.id.button_save)
         val buttonCancel = dialogView.findViewById<Button>(R.id.button_cancel)
 
-        editSpecificText.setText(goalDetail.specificText)
-        editMeasurableSeekbar.progress = goalDetail.measurable
-        editMeasurableValue.text = "${goalDetail.measurable}%"
+        editSpecificText.setText(latestGoalDetail.specificText)
+        editMeasurableSeekbar.progress = latestGoalDetail.measurable
+        editMeasurableValue.text = "${latestGoalDetail.measurable}%"
 
         editMeasurableSeekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -85,18 +88,18 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
 
         // Set DatePicker to current goal's time bound
         val cal = Calendar.getInstance()
-        val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
         val dbFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
 
         try {
-            // First try parsing with display format (MM/dd/yyyy)
-            val date = displayFormat.parse(goalDetail.timeBound)
+            // First try parsing with database format (yyyy-MM-dd)
+            val date = dbFormat.parse(latestGoalDetail.timeBound)
             if (date != null) {
                 cal.time = date
             } else {
-                // If that fails, try parsing with database format (yyyy-MM-dd)
-                val dbDate = dbFormat.parse(goalDetail.timeBound)
-                cal.time = dbDate ?: Date()
+                // If that fails, try parsing with display format (MM/dd/yyyy)
+                val displayDate = displayFormat.parse(latestGoalDetail.timeBound)
+                cal.time = displayDate ?: Date()
             }
         } catch (e: Exception) {
             // If both parsing attempts fail, use current date
@@ -122,7 +125,7 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
             val timeBound = "$year-${month + 1}-$day"
 
             // Check if the new title is different from the current one
-            if (specificText != goalDetail.specificText) {
+            if (specificText != latestGoalDetail.specificText) {
                 // Check for duplicates only if the title has changed
                 if (dbHelper.isSpecificExists(specificText)) {
                     // Show error dialog if duplicate exists
@@ -159,7 +162,7 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
                 }
             }
 
-            updateGoalDetail(goalDetail.specificId, specificText, measurable, timeBound)
+            updateGoalDetail(latestGoalDetail.specificId, specificText, measurable, timeBound)
             dialog.dismiss()
         }
 
@@ -178,6 +181,10 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
     ) {
         dbHelper.updateGoalDetail(specificId, specificText, measurable, timeBound)
         refreshData()
+    }
+
+    fun getLatestGoalDetail(specificId: Int): GoalDetail? {
+        return dbHelper.getLatestGoalDetailBySpecificId(specificId)
     }
 
     fun deleteGoalsBySpecificId(specificId: Int) {
@@ -209,11 +216,23 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
             private val dbDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
             private fun parseDate(dateString: String?): Date {
-                return try {
-                    dateString?.let { dbDateFormat.parse(it) } ?: Date()
-                } catch (e: ParseException) {
-                    Date()
+                if (dateString == null || dateString.isEmpty()) {
+                    return Date()
                 }
+                
+                return try {
+                    // First try parsing with database format (yyyy-MM-dd)
+                    dateString.let { dbDateFormat.parse(it) }
+                } catch (e: ParseException) {
+                    try {
+                        // If that fails, try parsing with display format (MM/dd/yyyy)
+                        val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+                        dateString.let { displayFormat.parse(it) }
+                    } catch (e2: ParseException) {
+                        // If both fail, return today's date
+                        Date()
+                    }
+                } ?: Date()
             }
 
             init {

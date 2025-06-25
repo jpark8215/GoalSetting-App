@@ -80,7 +80,7 @@ class HomeFragment : Fragment() {
                 // Retrieve the input values from EditText fields
                 val specific = binding.specific.text?.toString()
                 val measurable = measurableSeekBar.progress.toString()
-                val timeBound = timeBoundButton.text.toString()
+                val timeBound = timeBoundButton.tag?.toString() ?: timeBoundButton.text.toString()
 
                 // Check if all values are not null before creating a new Goal instance
                 if (!specific.isNullOrEmpty() && measurable.isNotEmpty() && timeBound != getString(R.string.`when`)

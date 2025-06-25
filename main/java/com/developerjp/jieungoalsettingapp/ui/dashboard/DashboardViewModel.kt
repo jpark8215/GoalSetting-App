@@ -41,6 +41,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private val _filteredGoals = MutableLiveData<List<GoalDetail>>()
     val filteredGoals: LiveData<List<GoalDetail>> = _filteredGoals
 
+    // Track the currently selected goal text
+    private var currentSelectedGoalText: String? = null
+
     init {
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
         fetchGoals()
@@ -49,6 +52,33 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     fun refreshData() {
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
         fetchGoals()
+    }
+
+    fun refreshDataPreservingSelection(selectedGoalText: String? = null) {
+        // Store the current selection
+        val goalToPreserve = selectedGoalText ?: currentSelectedGoalText
+        
+        // Refresh the data
+        _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
+        fetchGoals()
+        
+        // Restore the selection if we have a goal to preserve
+        goalToPreserve?.let { goalText ->
+            // Check if the goal still exists in the updated list
+            val goalExists = _allGoals.value?.any { it.specificText == goalText } == true
+            if (goalExists) {
+                currentSelectedGoalText = goalText
+                filterGoals(goalText)
+            } else {
+                // If the goal no longer exists, clear the selection and show all goals
+                currentSelectedGoalText = null
+                _filteredGoals.value = _allGoals.value
+            }
+        } ?: run {
+            // If no goal to preserve, show all goals
+            currentSelectedGoalText = null
+            _filteredGoals.value = _allGoals.value
+        }
     }
 
     // Fetch all goal details from the database
@@ -77,7 +107,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private fun deleteGoalsBySpecificId(specificId: Int) {
         dbHelper.deleteGoalsBySpecificId(specificId)
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
-        refreshData()
+        
+        // Refresh data - if the deleted goal was selected, it will automatically select the first available goal
+        refreshDataPreservingSelection()
     }
 
     private fun fetchGoals() {
@@ -93,14 +125,14 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun filterGoals(selectedText: String) {
+        currentSelectedGoalText = selectedText
         _filteredGoals.value = _allGoals.value?.filter { it.specificText == selectedText }
     }
 
     fun updateGoalProgress(specificId: Int, progress: Int) {
         dbHelper.updateGoalProgress(specificId, progress)
-        // We don't need to refresh the whole list here, but we'll need to update the item.
-        // For now, a full refresh is acceptable to ensure UI consistency.
-        refreshData()
+        // Refresh data while preserving the current selection
+        refreshDataPreservingSelection()
     }
 
     fun showCongratulationsDialog(context: Context, onDismiss: () -> Unit) {
@@ -142,9 +174,23 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
         // Set DatePicker to current goal's time bound
         val cal = Calendar.getInstance()
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val date = sdf.parse(goalDetail.timeBound)
-        cal.time = date ?: Date()
+        val dbFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+
+        try {
+            // First try parsing with database format (yyyy-MM-dd)
+            val date = dbFormat.parse(goalDetail.timeBound)
+            if (date != null) {
+                cal.time = date
+            } else {
+                // If that fails, try parsing with display format (MM/dd/yyyy)
+                val displayDate = displayFormat.parse(goalDetail.timeBound)
+                cal.time = displayDate ?: Date()
+            }
+        } catch (e: Exception) {
+            // If both parsing attempts fail, use current date
+            cal.time = Date()
+        }
 
         editTimeBoundDatePicker.updateDate(
             cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)
@@ -230,6 +276,9 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     ) {
         dbHelper.updateGoalDetail(specificId, specificText, measurable, timeBound)
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
-        refreshData()
+        
+        // If the goal title changed, preserve the new title, otherwise preserve the current selection
+        val goalToPreserve = if (specificText != currentSelectedGoalText) specificText else null
+        refreshDataPreservingSelection(goalToPreserve)
     }
 }

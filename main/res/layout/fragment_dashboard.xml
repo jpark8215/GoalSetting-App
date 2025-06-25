@@ -20,19 +20,44 @@
         android:layout_marginTop="10dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <!-- Ad Card for Dashboard -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/dashboardAdCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:layout_constraintBottom_toTopOf="@+id/spinnerCard"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/dashboardAdView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:adSize="BANNER"
+                app:adUnitId="ca-app-pub-2201141547916408/4897584985" />
+        </androidx.cardview.widget.CardView>
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/spinnerCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginStart="24dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="24dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/dashboardAdCard">
 
 
             <Spinner

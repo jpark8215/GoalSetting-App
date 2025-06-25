@@ -145,6 +145,12 @@ public class DBHelper extends SQLiteOpenHelper {
         if (dateStr == null || dateStr.isEmpty()) {
             return DATE_ONLY_FORMAT.format(new Date());
         }
+        
+        // If the date is already in the correct format (yyyy-MM-dd), return it as-is
+        if (dateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return dateStr;
+        }
+        
         try {
             // Try parsing with different formats
             Date date;
@@ -378,14 +384,103 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public void updateGoalProgress(int specificId, int progress) {
         // First, get the latest goal detail to retrieve the time_bound
-        GoalDetail latestGoalDetail = getGoalDetailBySpecificId(specificId);
+        GoalDetail latestGoalDetail = getLatestGoalDetailBySpecificId(specificId);
         if (latestGoalDetail != null) {
             // Insert a new goal detail entry with the updated progress
-            insertGoalDetail(specificId, progress, latestGoalDetail.getTimeBound(), System.currentTimeMillis());
+            // Use the original timeBound without reformatting it
+            insertGoalDetailWithoutReformatting(specificId, progress, latestGoalDetail.getTimeBound(), System.currentTimeMillis());
         }
     }
 
+    public GoalDetail getLatestGoalDetailBySpecificId(int specificId) {
+        SQLiteDatabase db = getReadableDatabase();
+        GoalDetail goalDetail = null;
+
+        String[] projection = {
+                GOAL_DETAIL_COLUMN_ID,
+                GOAL_DETAIL_COLUMN_MEASURABLE,
+                GOAL_DETAIL_COLUMN_TIME_BOUND,
+                GOAL_DETAIL_COLUMN_TIMESTAMP
+        };
+
+        String selection = GOAL_DETAIL_COLUMN_SPECIFIC_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(specificId)};
+        String orderBy = GOAL_DETAIL_COLUMN_TIMESTAMP + " DESC"; // Order by timestamp descending to get the latest
+
+        try (Cursor cursor = db.query(
+                TABLE_GOAL_DETAIL,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                orderBy
+        )) {
+            if (cursor.moveToFirst()) {
+                int idIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_ID);
+                int measurableIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_MEASURABLE);
+                int timeBoundIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIME_BOUND);
+                int timestampIndex = cursor.getColumnIndex(GOAL_DETAIL_COLUMN_TIMESTAMP);
+
+                // Check if indices are valid
+                if (idIndex == -1 || measurableIndex == -1 || timeBoundIndex == -1 || timestampIndex == -1) {
+                    // Handle the case where one or more indices are missing
+                    return null; // or throw an exception, log an error, etc.
+                }
+
+                // Retrieve values
+                int id = cursor.getInt(idIndex);
+                int measurable = cursor.getInt(measurableIndex);
+                String timeBound = cursor.getString(timeBoundIndex);
+                String timestampStr = cursor.getString(timestampIndex);
+
+                Date timestamp = null;
+                try {
+                    timestamp = DATE_FORMAT.parse(timestampStr);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                // Fetch specific text using DBHelper
+                String specificText = getSpecificText(specificId);
+
+                // Create GoalDetail object
+                goalDetail = new GoalDetail(id, specificId, measurable, timeBound, timestamp, specificText);
+            }
+        }
+
+        db.close();
+
+        return goalDetail;
+    }
+
+    public long insertGoalDetailWithoutReformatting(int specificId, int measurable, String timeBound, long timestamp) {
+        SQLiteDatabase db = getWritableDatabase();
+        long goalDetailId = -1;
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(GOAL_DETAIL_COLUMN_SPECIFIC_ID, specificId);
+            values.put(GOAL_DETAIL_COLUMN_MEASURABLE, measurable);
+            // Use the timeBound as-is without reformatting
+            values.put(GOAL_DETAIL_COLUMN_TIME_BOUND, timeBound);
+            values.put(GOAL_DETAIL_COLUMN_TIMESTAMP, DATE_FORMAT.format(new Date(timestamp)));
+
+            goalDetailId = db.insert(TABLE_GOAL_DETAIL, null, values);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.close(); // Close database connection
+        }
+
+        return goalDetailId;
+    }
+
     public void updateGoalDetail(int specificId, @NotNull String specificText, int measurable, @NotNull String timeBound) {
+        updateGoalDetailWithoutReformatting(specificId, specificText, measurable, timeBound);
+    }
+
+    public void updateGoalDetailWithoutReformatting(int specificId, @NotNull String specificText, int measurable, @NotNull String timeBound) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         try {
@@ -415,7 +510,8 @@ public class DBHelper extends SQLiteOpenHelper {
             ContentValues goalDetailValues = new ContentValues();
             goalDetailValues.put(GOAL_DETAIL_COLUMN_SPECIFIC_ID, specificId);
             goalDetailValues.put(GOAL_DETAIL_COLUMN_MEASURABLE, measurable);
-            goalDetailValues.put(GOAL_DETAIL_COLUMN_TIME_BOUND, formatDateString(timeBound));
+            // Use the timeBound as-is without reformatting
+            goalDetailValues.put(GOAL_DETAIL_COLUMN_TIME_BOUND, timeBound);
             goalDetailValues.put(GOAL_DETAIL_COLUMN_TIMESTAMP, DATE_FORMAT.format(new Date())); // Current timestamp
 
             db.insert(TABLE_GOAL_DETAIL, null, goalDetailValues);

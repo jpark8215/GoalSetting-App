@@ -62,11 +62,23 @@ class GoalAdapter(
         private val dbDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
         private fun parseDate(dateString: String?): Date {
-            return try {
-                dateString?.let { dbDateFormat.parse(it) } ?: Date()
-            } catch (e: java.text.ParseException) {
-                Date()
+            if (dateString == null || dateString.isEmpty()) {
+                return Date()
             }
+            
+            return try {
+                // First try parsing with database format (yyyy-MM-dd)
+                dateString.let { dbDateFormat.parse(it) }
+            } catch (e: java.text.ParseException) {
+                try {
+                    // If that fails, try parsing with display format (MM/dd/yyyy)
+                    val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+                    dateString.let { displayFormat.parse(it) }
+                } catch (e2: java.text.ParseException) {
+                    // If both fail, return today's date
+                    Date()
+                }
+            } ?: Date()
         }
 
         fun bind(goalDetails: List<GoalDetail>, viewModel: DashboardViewModel) {
