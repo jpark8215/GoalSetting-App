@@ -8,17 +8,19 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.developerjp.jieungoalsettingapp.R
 import com.developerjp.jieungoalsettingapp.databinding.FragmentDashboardBinding
 import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.AdListener
 
 class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
+
+    private var spinnerSelectionSuppressed = false
     private lateinit var dashboardViewModel: DashboardViewModel
     private lateinit var adapter: GoalAdapter
 
@@ -34,6 +36,7 @@ class DashboardFragment : Fragment() {
 
         setupRecyclerView()
         setupSpinner()
+        setupFab()
         setupAd()
         observeViewModel()
 
@@ -69,61 +72,65 @@ class DashboardFragment : Fragment() {
                 position: Int,
                 id: Long
             ) {
+                if (spinnerSelectionSuppressed) return
                 val selectedText = parent?.getItemAtPosition(position).toString()
                 dashboardViewModel.filterGoals(selectedText)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Optional: Handle case when nothing is selected
             }
         }
+    }
+
+    private fun setupFab() {
+        val goHome = View.OnClickListener {
+            findNavController().navigate(R.id.navigation_home)
+        }
+        binding.fabAddGoal.setOnClickListener(goHome)
+        binding.buttonEmptyCreateGoal.setOnClickListener(goHome)
     }
 
     private fun setupAd() {
         val adRequest = AdRequest.Builder().build()
         binding.dashboardAdView.loadAd(adRequest)
-        
-        binding.dashboardAdView.adListener = object : AdListener() {
-
-        }
     }
 
     private fun observeViewModel() {
-        // Observe all goals for spinner population
         dashboardViewModel.allGoals.observe(viewLifecycleOwner) { goals ->
-            val specificTexts = goals.map { it.specificText }.distinct()
-            
-            // Store current selection before updating adapter
-            val currentSelection = binding.spinnerGoals.selectedItem?.toString()
-            
+            val filterAll = getString(R.string.filter_all_goals)
+            val specificTexts = goals.map { it.specificText }.distinct().sortedBy { it.lowercase() }
+            val spinnerOptions = mutableListOf(filterAll).apply { addAll(specificTexts) }
+
+            spinnerSelectionSuppressed = true
             ArrayAdapter(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
-                specificTexts
+                spinnerOptions
             ).also { spinnerAdapter ->
                 spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 binding.spinnerGoals.adapter = spinnerAdapter
-                
-                // Restore selection if it still exists in the new list
-                currentSelection?.let { selection ->
-                    val newPosition = specificTexts.indexOf(selection)
-                    if (newPosition >= 0) {
-                        binding.spinnerGoals.setSelection(newPosition)
-                    }
-                }
+                val desired = dashboardViewModel.desiredSpinnerIndex(spinnerOptions)
+                val hi = (spinnerOptions.size - 1).coerceAtLeast(0)
+                binding.spinnerGoals.setSelection(desired.coerceIn(0, hi))
+            }
+            binding.spinnerGoals.post {
+                spinnerSelectionSuppressed = false
+                dashboardViewModel.filterGoals(
+                    binding.spinnerGoals.selectedItem?.toString() ?: filterAll
+                )
             }
         }
 
-        // Observe goal list for RecyclerView updates
-        dashboardViewModel.goalList.observe(viewLifecycleOwner) { groupedGoals ->
-            adapter.updateGoalDetails(groupedGoals)
-        }
-
-        // Observe filtered goals
         dashboardViewModel.filteredGoals.observe(viewLifecycleOwner) { filteredGoals ->
             val groupedFilteredGoals = filteredGoals.groupBy { it.specificId }
             adapter.updateGoalDetails(groupedFilteredGoals)
+            updateEmptyDashboardState(groupedFilteredGoals.isEmpty())
         }
+    }
+
+    private fun updateEmptyDashboardState(showEmptyCard: Boolean) {
+        binding.emptyGoalsState.visibility = if (showEmptyCard) View.VISIBLE else View.GONE
+        binding.recyclerViewGoals.visibility = if (showEmptyCard) View.GONE else View.VISIBLE
     }
 
     override fun onDestroyView() {

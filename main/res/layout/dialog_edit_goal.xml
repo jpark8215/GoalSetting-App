@@ -21,7 +21,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Edit Goal"
+                android:text="@string/dialog_edit_goal_title"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface" />
@@ -36,14 +36,14 @@
                     android:id="@+id/edit_specific_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Goal" />
+                    android:hint="@string/dialog_edit_goal_name_hint" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/goal_measure"
+                android:text="@string/dialog_edit_goal_progress_label"
                 android:textColor="?attr/colorOnSurface" />
 
             <SeekBar
@@ -66,7 +66,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Target Date"
+                android:text="@string/dialog_edit_target_date"
                 android:textColor="?attr/colorOnSurface" />
 
             <DatePicker
@@ -91,14 +91,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:text="Cancel"
+                    android:text="@string/action_cancel"
                     style="@style/Widget.MaterialComponents.Button.TextButton" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_save"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Save" />
+                    android:text="@string/action_save" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

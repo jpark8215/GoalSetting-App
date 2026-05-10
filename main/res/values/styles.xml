@@ -21,9 +21,20 @@
     </style>
 
     <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/colorAccentDark</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="PositiveDestructiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
         <item name="android:textColor">@color/deleteRed</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textAllCaps">true</item>
+    </style>
+
+    <!-- Delete confirmations: destructive primary action -->
+    <style name="MaterialAlertDialog_RoundedDestructive" parent="MaterialAlertDialog_Rounded">
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveDestructiveButtonStyle</item>
     </style>
 
     <style name="NegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">

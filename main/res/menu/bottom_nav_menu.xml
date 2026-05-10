@@ -10,9 +10,10 @@
         android:id="@+id/navigation_home"
         android:icon="@drawable/ic_home_black_24dp"
         android:title="@string/title_home" />
+
     <item
         android:id="@+id/navigation_achievements"
-        android:icon="@android:drawable/btn_star"
+        android:icon="@drawable/ic_achievement_24dp"
         android:title="@string/title_achievements" />
 
 </menu>

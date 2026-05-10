@@ -1,6 +1,5 @@
 package com.developerjp.jieungoalsettingapp.ui.dashboard
 
-import android.app.AlertDialog
 import android.app.Application
 import android.content.Context
 import android.view.LayoutInflater
@@ -41,44 +40,57 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     private val _filteredGoals = MutableLiveData<List<GoalDetail>>()
     val filteredGoals: LiveData<List<GoalDetail>> = _filteredGoals
 
-    // Track the currently selected goal text
+    /** Spinner option "show all"; null selection means filter shows every active goal. */
     private var currentSelectedGoalText: String? = null
 
+    private val allGoalsFilterLabel: String
+        get() = getApplication<Application>().getString(R.string.filter_all_goals)
+
     init {
-        _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
-        fetchGoals()
+        refreshFromDbPreservingSpinnerSelection()
     }
 
     fun refreshData() {
-        _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
-        fetchGoals()
+        refreshFromDbPreservingSpinnerSelection()
+    }
+
+    /** Index to select in spinner options `[allGoalsLabel, ...titles]`. */
+    fun desiredSpinnerIndex(spinnerLabels: List<String>): Int {
+        val selected = currentSelectedGoalText ?: return 0
+        val idx = spinnerLabels.indexOf(selected)
+        return if (idx >= 0) idx else 0
     }
 
     fun refreshDataPreservingSelection(selectedGoalText: String? = null) {
-        // Store the current selection
-        val goalToPreserve = selectedGoalText ?: currentSelectedGoalText
-        
-        // Refresh the data
+        val preserved = selectedGoalText ?: currentSelectedGoalText
+        refreshFromDbPreservingSpinnerSelection(preserved)
+    }
+
+    private fun refreshFromDbPreservingSpinnerSelection(preserveGoalTitle: String? = null) {
         _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
-        fetchGoals()
-        
-        // Restore the selection if we have a goal to preserve
-        goalToPreserve?.let { goalText ->
-            // Check if the goal still exists in the updated list
-            val goalExists = _allGoals.value?.any { it.specificText == goalText } == true
-            if (goalExists) {
-                currentSelectedGoalText = goalText
-                filterGoals(goalText)
-            } else {
-                // If the goal no longer exists, clear the selection and show all goals
-                currentSelectedGoalText = null
-                _filteredGoals.value = _allGoals.value
-            }
-        } ?: run {
-            // If no goal to preserve, show all goals
-            currentSelectedGoalText = null
-            _filteredGoals.value = _allGoals.value
+
+        val allGoals = dbHelper.allGoalDetailsWithSpecificText
+        val goalsBySpecificId = allGoals.groupBy { it.specificId }
+        val activeIncomplete = allGoals.filter { detail ->
+            val latestEntry = goalsBySpecificId[detail.specificId]?.maxByOrNull { it.timestamp }
+            (latestEntry?.measurable ?: 0) < 100
         }
+        _allGoals.value = activeIncomplete
+
+        val textToRestore = preserveGoalTitle ?: currentSelectedGoalText
+        currentSelectedGoalText = when {
+            textToRestore == null -> null
+            activeIncomplete.none { it.specificText == textToRestore } -> null
+            else -> textToRestore
+        }
+        applyGoalFilter()
+    }
+
+    private fun applyGoalFilter() {
+        val all = _allGoals.value.orEmpty()
+        val title = currentSelectedGoalText
+        _filteredGoals.value =
+            if (title == null) all else all.filter { it.specificText == title }
     }
 
     // Fetch all goal details from the database
@@ -106,27 +118,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     // Delete goals by specific ID
     private fun deleteGoalsBySpecificId(specificId: Int) {
         dbHelper.deleteGoalsBySpecificId(specificId)
-        _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
-        
-        // Refresh data - if the deleted goal was selected, it will automatically select the first available goal
         refreshDataPreservingSelection()
     }
 
-    private fun fetchGoals() {
-        val allGoals = dbHelper.allGoalDetailsWithSpecificText
-        val goalsBySpecificId = allGoals.groupBy { it.specificId }
-
-        // Filter out goals where the latest entry is 100%
-        _allGoals.value = allGoals.filter { detail ->
-            val latestEntry = goalsBySpecificId[detail.specificId]?.maxByOrNull { it.timestamp }
-            (latestEntry?.measurable ?: 0) < 100
-        }
-        _filteredGoals.value = _allGoals.value
-    }
-
-    fun filterGoals(selectedText: String) {
-        currentSelectedGoalText = selectedText
-        _filteredGoals.value = _allGoals.value?.filter { it.specificText == selectedText }
+    fun filterGoals(selectedSpinnerText: String) {
+        currentSelectedGoalText =
+            if (selectedSpinnerText == allGoalsFilterLabel) null else selectedSpinnerText
+        applyGoalFilter()
     }
 
     fun updateGoalProgress(specificId: Int, progress: Int) {
@@ -161,11 +159,17 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
         editSpecificText.setText(goalDetail.specificText)
         editMeasurableSeekbar.progress = goalDetail.measurable
-        editMeasurableValue.text = "${goalDetail.measurable}%"
+        editMeasurableValue.text = context.resources.getString(
+            R.string.progress_percent_format,
+            goalDetail.measurable
+        )
 
         editMeasurableSeekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                editMeasurableValue.text = "$progress%"
+                editMeasurableValue.text = context.resources.getString(
+                    R.string.progress_percent_format,
+                    progress
+                )
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -208,45 +212,24 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             val day = editTimeBoundDatePicker.dayOfMonth
             val timeBound = "$year-${month + 1}-$day"
 
-            // Check if the new title is different from the current one
-            if (specificText != goalDetail.specificText) {
-                // Check for duplicates only if the title has changed
-                if (dbHelper.isSpecificExists(specificText)) {
-                    // Show error dialog if duplicate exists
-                    MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded)
-                        .setTitle("Duplicate Goal")
-                        .setMessage("This goal title has already been claimed\nby a legendary quest.")
-                        .setPositiveButton("OK") { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .create()
-                        .apply {
-                            setOnShowListener {
-                                // Style the title
-                                findViewById<TextView>(android.R.id.title)?.apply {
-                                    setTextColor(resources.getColor(R.color.colorAccent, null))
-                                    textSize = 14f
-                                    setPadding(0, 0, 0, 20)
-                                }
-                                // Style the message
-                                findViewById<TextView>(android.R.id.message)?.apply {
-                                    setTextColor(resources.getColor(R.color.textPrimary, null))
-                                    textSize = 14f
-                                    setPadding(70, 0, 0, 20)
-                                }
-                                // Style the dialog
-                                getButton(AlertDialog.BUTTON_POSITIVE)?.apply {
-                                    setTextColor(resources.getColor(R.color.purple_500, null))
-                                    textSize = 12f
-                                }
-                            }
-                        }
-                        .show()
-                    return@setOnClickListener
-                }
+            if (specificText != goalDetail.specificText
+                && dbHelper.isSpecificExists(specificText)
+            ) {
+                MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded)
+                    .setTitle(R.string.duplicate_goal_title)
+                    .setMessage(R.string.duplicate_goal_message)
+                    .setPositiveButton(R.string.action_ok) { d, _ -> d.dismiss() }
+                    .show()
+                return@setOnClickListener
             }
 
-            updateGoalDetail(goalDetail.specificId, specificText, measurable, timeBound)
+            updateGoalDetail(
+                goalDetail.specificId,
+                goalDetail.specificText,
+                specificText,
+                measurable,
+                timeBound
+            )
             dialog.dismiss()
         }
 
@@ -258,27 +241,26 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun showDeleteConfirmation(context: Context, specificId: Int) {
-        MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded)
-            .setTitle("Confirm Delete")
-            .setMessage("Are you sure you want to delete this goal?")
-            .setPositiveButton("Delete") { _, _ ->
+        MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_RoundedDestructive)
+            .setTitle(R.string.confirm_delete_title)
+            .setMessage(R.string.confirm_delete_message)
+            .setPositiveButton(R.string.action_delete) { _, _ ->
                 deleteGoalsBySpecificId(specificId)
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 
     private fun updateGoalDetail(
         specificId: Int,
+        oldSpecificText: String,
         specificText: String,
         measurable: Int,
         timeBound: String
     ) {
         dbHelper.updateGoalDetail(specificId, specificText, measurable, timeBound)
-        _goalList.value = fetchGoalsFromDatabase().groupBy { it.specificId }
-        
-        // If the goal title changed, preserve the new title, otherwise preserve the current selection
-        val goalToPreserve = if (specificText != currentSelectedGoalText) specificText else null
-        refreshDataPreservingSelection(goalToPreserve)
+        val spinnerTitleToPreserve =
+            if (specificText != oldSpecificText) specificText else currentSelectedGoalText
+        refreshDataPreservingSelection(spinnerTitleToPreserve)
     }
 }

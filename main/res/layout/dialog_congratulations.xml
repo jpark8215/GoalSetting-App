@@ -20,7 +20,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="16dp"
-        android:text="Congratulations!"
+        android:text="@string/congratulations_title"
+        android:textColor="@color/textPrimary"
         android:textSize="22sp"
         android:textStyle="bold" />
 
@@ -29,7 +30,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="8dp"
-        android:text="You've completed your goal!"
+        android:gravity="center"
+        android:text="@string/congratulations_message"
+        android:textColor="@color/textDark"
         android:textSize="16sp" />
 
     <com.google.android.material.button.MaterialButton
@@ -38,6 +41,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="24dp"
-        android:text="OK" />
+        android:text="@string/action_ok" />
 
-</LinearLayout> 
+</LinearLayout>

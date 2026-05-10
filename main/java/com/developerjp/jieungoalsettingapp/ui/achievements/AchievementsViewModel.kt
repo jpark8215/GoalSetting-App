@@ -2,13 +2,14 @@ package com.developerjp.jieungoalsettingapp.ui.achievements
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -45,25 +46,22 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
         val allGoals = dbHelper.allGoalDetailsWithSpecificText
         val goalsBySpecificId = allGoals.groupBy { it.specificId }
 
-        // Get the latest entry for each specific ID
         val latestEntries = goalsBySpecificId.mapValues { (_, goals) ->
             goals.maxByOrNull { it.timestamp }
         }
 
-        // Filter goals where the latest entry is 100% and remove nulls
-        val completedGoals = latestEntries.values
+        val completedGoalsList = latestEntries.values
             .filterNotNull()
             .filter { it.measurable == 100 }
 
-        _completedGoals.value = completedGoals
+        _completedGoals.value = completedGoalsList
         _totalGoals.value = goalsBySpecificId.size
-        _totalCompletedGoals.value = completedGoals.size
+        _totalCompletedGoals.value = completedGoalsList.size
     }
 
     fun showEditDialog(context: Context, goalDetail: GoalDetail) {
-        // Get the latest goal detail from the database to ensure we have the most recent data
         val latestGoalDetail = getLatestGoalDetail(goalDetail.specificId) ?: goalDetail
-        
+
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_goal, null)
         val editSpecificText = dialogView.findViewById<EditText>(R.id.edit_specific_text)
         val editMeasurableSeekbar = dialogView.findViewById<SeekBar>(R.id.edit_measurable_seekbar)
@@ -75,34 +73,36 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
 
         editSpecificText.setText(latestGoalDetail.specificText)
         editMeasurableSeekbar.progress = latestGoalDetail.measurable
-        editMeasurableValue.text = "${latestGoalDetail.measurable}%"
+        editMeasurableValue.text = context.resources.getString(
+            R.string.progress_percent_format,
+            latestGoalDetail.measurable
+        )
 
         editMeasurableSeekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                editMeasurableValue.text = "$progress%"
+                editMeasurableValue.text = context.resources.getString(
+                    R.string.progress_percent_format,
+                    progress
+                )
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        // Set DatePicker to current goal's time bound
         val cal = Calendar.getInstance()
         val dbFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
 
         try {
-            // First try parsing with database format (yyyy-MM-dd)
             val date = dbFormat.parse(latestGoalDetail.timeBound)
             if (date != null) {
                 cal.time = date
             } else {
-                // If that fails, try parsing with display format (MM/dd/yyyy)
                 val displayDate = displayFormat.parse(latestGoalDetail.timeBound)
                 cal.time = displayDate ?: Date()
             }
-        } catch (e: Exception) {
-            // If both parsing attempts fail, use current date
+        } catch (_: Exception) {
             cal.time = Date()
         }
 
@@ -124,45 +124,18 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
             val day = editTimeBoundDatePicker.dayOfMonth
             val timeBound = "$year-${month + 1}-$day"
 
-            // Check if the new title is different from the current one
-            if (specificText != latestGoalDetail.specificText) {
-                // Check for duplicates only if the title has changed
-                if (dbHelper.isSpecificExists(specificText)) {
-                    // Show error dialog if duplicate exists
-                    MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded)
-                        .setTitle("Duplicate Goal")
-                        .setMessage("This goal title has already been claimed\nby a legendary quest.")
-                        .setPositiveButton("OK") { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .create()
-                        .apply {
-                            setOnShowListener {
-                                // Style the title
-                                findViewById<TextView>(android.R.id.title)?.apply {
-                                    setTextColor(resources.getColor(R.color.colorAccent, null))
-                                    textSize = 14f
-                                    setPadding(0, 0, 0, 20)
-                                }
-                                // Style the message
-                                findViewById<TextView>(android.R.id.message)?.apply {
-                                    setTextColor(resources.getColor(R.color.textPrimary, null))
-                                    textSize = 14f
-                                    setPadding(70, 0, 0, 20)
-                                }
-                                // Style the dialog
-                                getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.apply {
-                                    setTextColor(resources.getColor(R.color.purple_500, null))
-                                    textSize = 12f
-                                }
-                            }
-                        }
-                        .show()
-                    return@setOnClickListener
-                }
+            if (specificText != latestGoalDetail.specificText
+                && dbHelper.isSpecificExists(specificText)
+            ) {
+                MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded)
+                    .setTitle(R.string.duplicate_goal_title)
+                    .setMessage(R.string.duplicate_goal_message)
+                    .setPositiveButton(R.string.action_ok) { d, _ -> d.dismiss() }
+                    .show()
+                return@setOnClickListener
             }
 
-            updateGoalDetail(latestGoalDetail.specificId, specificText, measurable, timeBound)
+            updateGoalDetailAfterEdit(latestGoalDetail.specificId, specificText, measurable, timeBound)
             dialog.dismiss()
         }
 
@@ -173,7 +146,7 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
         dialog.show()
     }
 
-    private fun updateGoalDetail(
+    private fun updateGoalDetailAfterEdit(
         specificId: Int,
         specificText: String,
         measurable: Int,
@@ -183,9 +156,19 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
         refreshData()
     }
 
-    fun getLatestGoalDetail(specificId: Int): GoalDetail? {
-        return dbHelper.getLatestGoalDetailBySpecificId(specificId)
+    fun confirmDeleteAchievement(context: Context, specificId: Int) {
+        MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_RoundedDestructive)
+            .setTitle(R.string.confirm_delete_title)
+            .setMessage(R.string.confirm_delete_message)
+            .setPositiveButton(R.string.action_delete) { _, _ ->
+                deleteGoalsBySpecificId(specificId)
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
     }
+
+    fun getLatestGoalDetail(specificId: Int): GoalDetail? =
+        dbHelper.getLatestGoalDetailBySpecificId(specificId)
 
     fun deleteGoalsBySpecificId(specificId: Int) {
         dbHelper.deleteGoalsBySpecificId(specificId)
@@ -208,88 +191,69 @@ class AchievementsViewModel(private val dbHelper: DBHelper) : ViewModel() {
         private val viewModel: AchievementsViewModel
     ) : RecyclerView.Adapter<CompletedGoalsAdapter.ViewHolder>() {
 
-        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            private val specificTextView: TextView = itemView.findViewById(R.id.specific_text)
-            private val timeBoundTextView: TextView = itemView.findViewById(R.id.time_bound_text)
+        inner class ViewHolder(private val parent: android.view.View) :
+            RecyclerView.ViewHolder(parent) {
+            private val specificTextView: TextView = parent.findViewById(R.id.specific_text)
+            private val targetLine: TextView = parent.findViewById(R.id.target_line)
+            private val completedLine: TextView = parent.findViewById(R.id.completed_line)
+            private val menuButton: ImageButton = parent.findViewById(R.id.button_goal_menu)
 
             private val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
             private val dbDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
             private fun parseDate(dateString: String?): Date {
-                if (dateString == null || dateString.isEmpty()) {
+                if (dateString.isNullOrEmpty()) {
                     return Date()
                 }
-                
+
                 return try {
-                    // First try parsing with database format (yyyy-MM-dd)
-                    dateString.let { dbDateFormat.parse(it) }
+                    dbDateFormat.parse(dateString)!!
                 } catch (e: ParseException) {
                     try {
-                        // If that fails, try parsing with display format (MM/dd/yyyy)
-                        val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-                        dateString.let { displayFormat.parse(it) }
+                        SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).parse(dateString)
+                            ?: Date()
                     } catch (e2: ParseException) {
-                        // If both fail, return today's date
                         Date()
-                    }
-                } ?: Date()
-            }
-
-            init {
-                itemView.setOnLongClickListener { view ->
-                    val position = adapterPosition
-                    if (position != RecyclerView.NO_POSITION) {
-                        val goal = completedGoals[position]
-                        // Show options dialog
-                        val options = arrayOf("Edit", "Delete")
-                        MaterialAlertDialogBuilder(
-                            view.context,
-                            R.style.MaterialAlertDialog_Rounded
-                        )
-                            .setTitle("Goal Options")
-                            .setItems(options) { _, which ->
-                                when (which) {
-                                    0 -> viewModel.showEditDialog(view.context, goal)
-                                    1 -> {
-                                        // Show delete confirmation
-                                        MaterialAlertDialogBuilder(
-                                            view.context,
-                                            R.style.MaterialAlertDialog_Rounded
-                                        )
-                                            .setTitle("Confirm Delete")
-                                            .setMessage("Are you sure you want to delete this goal?")
-                                            .setPositiveButton("Delete") { _, _ ->
-
-                                                viewModel.deleteGoalsBySpecificId(goal.specificId)
-                                            }
-                                            .setNegativeButton("Cancel", null)
-                                            .show()
-                                    }
-                                }
-                            }
-                            .show()
-                        true
-                    } else {
-                        false
                     }
                 }
             }
 
             fun bind(goal: GoalDetail) {
+                val ctx = parent.context
                 specificTextView.text = goal.specificText
-                timeBoundTextView.text = dateFormat.format(parseDate(goal.timeBound))
+                targetLine.text =
+                    ctx.getString(R.string.achievement_row_target, dateFormat.format(parseDate(goal.timeBound)))
+                completedLine.text =
+                    ctx.getString(R.string.achievement_row_completed, dateFormat.format(goal.timestamp))
+
+                menuButton.setOnClickListener {
+                    val popup = PopupMenu(ctx, menuButton)
+                    popup.menuInflater.inflate(R.menu.popup_goal_achievement, popup.menu)
+                    popup.setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            R.id.menu_edit_goal -> viewModel.showEditDialog(ctx, goal)
+                            R.id.menu_delete_goal -> viewModel.confirmDeleteAchievement(ctx, goal.specificId)
+                        }
+                        true
+                    }
+                    popup.show()
+                }
+
+                parent.setOnLongClickListener {
+                    menuButton.performClick()
+                    true
+                }
             }
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_achievement, parent, false)
+        override fun onCreateViewHolder(parentView: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parentView.context)
+                .inflate(R.layout.item_achievement, parentView, false)
             return ViewHolder(view)
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val goal = completedGoals[position]
-            holder.bind(goal)
+            holder.bind(completedGoals[position])
         }
 
         override fun getItemCount(): Int = completedGoals.size

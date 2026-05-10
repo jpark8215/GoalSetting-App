@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/backgroundColor">
@@ -40,7 +41,7 @@
                     android:layout_alignParentBottom="true"
                     android:layout_marginBottom="24dp"
                     android:fontFamily="@font/delius_swash_caps"
-                    android:text="Set goals and track the progress!"
+                    android:text="@string/home_tagline"
                     android:textAlignment="center"
                     android:textColor="@android:color/white"
                     android:textSize="20sp" />
@@ -83,7 +84,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="16dp"
-                    android:fontFamily="@font/delius_swash_caps"
                     android:hint="@string/what"
                     android:labelFor="@id/specific">
 
@@ -91,9 +91,9 @@
                         android:id="@+id/specific"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/delius_swash_caps"
                         android:importantForAccessibility="yes"
-                        android:inputType="text" />
+                        android:inputType="textCapSentences"
+                        android:textColor="@color/textPrimary" />
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -114,11 +114,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:fontFamily="@font/delius_swash_caps"
                         android:text="@string/goal_measure"
                         android:textAlignment="center"
-                        android:textColor="@color/black"
-                        android:textSize="18sp" />
+                        android:textColor="@color/textPrimary"
+                        android:textSize="16sp" />
 
                     <SeekBar
                         android:id="@+id/measurable"
@@ -127,8 +126,8 @@
                         android:layout_height="wrap_content"
                         android:max="100"
                         android:progress="20"
-                        android:progressTint="@color/material_dynamic_primary40"
-                        android:thumbTint="@color/material_dynamic_primary40" />
+                        android:progressTint="@color/primaryDarkColor"
+                        android:thumbTint="@color/primaryDarkColor" />
 
                     <TextView
                         android:id="@+id/seekBarValue"
@@ -136,11 +135,10 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginTop="8dp"
-                        android:fontFamily="@font/delius_swash_caps"
-                        android:text="20%"
-                        android:textColor="@color/black"
+                        android:textColor="@color/textDark"
                         android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        tools:text="20%" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -152,20 +150,18 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:fontFamily="@font/delius_swash_caps"
                             android:text="@string/very_far"
-                            android:textColor="@color/black"
-                            android:textSize="16sp" />
+                            android:textColor="@color/textPrimary"
+                            android:textSize="14sp" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:fontFamily="@font/delius_swash_caps"
                             android:gravity="end"
                             android:text="@string/very_close"
-                            android:textColor="@color/black"
-                            android:textSize="16sp" />
+                            android:textColor="@color/textPrimary"
+                            android:textSize="14sp" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -187,12 +183,11 @@
                         android:layout_height="wrap_content"
                         android:clickable="true"
                         android:focusable="true"
-                        android:fontFamily="@font/delius_swash_caps"
                         android:gravity="center_vertical"
                         android:padding="16dp"
                         android:text="@string/when"
-                        android:textColor="@color/black"
-                        android:textSize="18sp"
+                        android:textColor="@color/textPrimary"
+                        android:textSize="17sp"
                         android:drawablePadding="8dp" />
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
