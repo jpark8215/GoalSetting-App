@@ -1,0 +1,72 @@
+<resources>
+    <string name="app_name">GoalQuest</string>
+    <!-- Bottom nav / toolbar labels -->
+    <string name="title_dashboard">Track</string>
+    <string name="title_home">New Goal</string>
+    <string name="title_achievements">Wins</string>
+
+    <string name="your_active_goals">Your Active Goals</string>
+    <string name="active_goals_summary">You have %1$d active goal(s)</string>
+
+    <string name="what">Name your goal</string>
+    <string name="when">Tap to pick a target date</string>
+    <string name="let_s_go">Save goal</string>
+
+    <string name="goal_measure">Starting progress (you can adjust this later)</string>
+    <string name="very_far">0% — not started</string>
+    <string name="very_close">100% — complete</string>
+
+    <string name="home_tagline">Set goals and track your progress.</string>
+    <string name="pick_target_date">Pick target date</string>
+    <string name="snackbar_goal_saved">Goal saved</string>
+    <string name="fill_all_fields">Fill in every field, including the target date.</string>
+    <string name="error_generic_format">Something went wrong: %1$s</string>
+
+    <string name="filter_all_goals">All Goals</string>
+
+    <string name="dashboard_empty_title">No active goals</string>
+    <string name="dashboard_empty_message">Add a goal to start tracking progress here.</string>
+    <string name="dashboard_empty_button">New Goal</string>
+    <string name="dashboard_fab_new_goal_desc">Create a new goal</string>
+
+    <string name="item_goal_target_date_label">Target date</string>
+    <string name="item_goal_progress_history">Progress history</string>
+    <string name="item_goal_toggle_history_desc">Expand or collapse progress history chart</string>
+    <string name="item_goal_edit_desc">Edit Goal</string>
+    <string name="item_goal_delete_desc">Delete goal</string>
+
+    <string name="update_progress_title">Update progress</string>
+    <string name="update_progress_message_format">Save progress at %1$d%%?</string>
+    <string name="progress_percent_format">%1$d%%</string>
+    <string name="action_yes">Yes</string>
+    <string name="action_no">No</string>
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+
+    <string name="duplicate_goal_title">Duplicate goal</string>
+    <string name="duplicate_goal_message">That goal name is already in use. Choose a different name.</string>
+
+    <string name="confirm_delete_title">Delete goal?</string>
+    <string name="confirm_delete_message">This removes the goal and its history from the app.</string>
+
+    <string name="congratulations_title">Congratulations!</string>
+    <string name="congratulations_message">You reached 100% on this goal.</string>
+
+    <string name="dialog_edit_goal_title">Edit Goal</string>
+    <string name="dialog_edit_goal_name_hint">Goal name</string>
+    <string name="dialog_edit_goal_progress_label">Progress (%)</string>
+    <string name="dialog_edit_target_date">Target date</string>
+
+    <string name="achievement_summary_started">Goals started</string>
+    <string name="achievement_summary_completed">Completed</string>
+    <string name="achievement_row_target">Target: %1$s</string>
+    <string name="achievement_row_completed">Completed: %1$s</string>
+    <string name="achievement_empty_title">No completed goals yet</string>
+    <string name="achievement_empty_body">Finish a goal at 100% to see it listed here.</string>
+    <string name="achievement_menu_desc">Goal actions</string>
+    <string name="achievement_menu_edit">Edit</string>
+    <string name="achievement_menu_delete">Delete</string>
+
+</resources>

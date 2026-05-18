@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_update_progress"
+        android:title="Update Progress" />
+    <item
+        android:id="@+id/action_edit_goal"
+        android:title="Edit Goal" />
+    <item
+        android:id="@+id/action_delete_goal"
+        android:title="Delete Goal" />
+</menu>
