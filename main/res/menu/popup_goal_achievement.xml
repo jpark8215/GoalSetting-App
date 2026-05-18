@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/menu_edit_goal"
-        android:title="@string/achievement_menu_edit" />
-    <item
-        android:id="@+id/menu_delete_goal"
-        android:title="@string/achievement_menu_delete" />
-</menu>
